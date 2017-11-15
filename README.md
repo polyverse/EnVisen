@@ -1,2 +1,5 @@
-# binary-comparison-example
-Online x86 binary comparison tool
+# Binary Entropy Visualizer
+
+Online x86 binary visualizer for comparing two binaries side-by-side and understanding the entropy between them.
+
+
