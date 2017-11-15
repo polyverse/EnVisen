@@ -1,3 +1,5 @@
+// Thank you Kaitai for this!! https://github.com/kaitai-io
+
 // This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
 // -*- mode: js; js-indent-level: 2; -*-
 (function (root, factory) {

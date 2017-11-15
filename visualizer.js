@@ -124,12 +124,42 @@ function analyzeResult(dataArray, analysisElem, canvasElem) {
 
     var ks = new KaitaiStream(dataArray, 0)
     elf = new Elf(ks)
-    analysisElem.innerHTML = '<p>' +
+    analysisElem.innerHTML =
     '<i>Type</i>: <b>' + Elf.ObjType[elf.header.eType] +
     '</b>, <i>Machine</i>: <b>' + Elf.Machine[elf.header.machine] +
     '</b>, <i>Bits</i>: <b>' + Elf.Bits[elf.bits] +
     '</b>, <i>Endian</i>: <b>' + Elf.Endian[elf.endian] +
     '</b>, <i>ABI</i>: <b>' + Elf.OsAbi[elf.abi] +
     '</b>, <i>ABI Version</i>: <b>' + elf.abiVersion +
-    "</b>.</p>";
+    '</b>.<br/>';
+
+    var expando = $('<a href="#">Show/Hide Details</a>')
+    var expansionDiv = $('<div style="display: none"></div>');
+    $(analysisElem).append(expando)
+    $(analysisElem).append(expansionDiv)
+    expando.click(function() {
+      expansionDiv.toggle();
+    });
+
+    expansionDiv.append('<H5>Program Headers</H5>');
+    //fill in expansionDiv with section and program headers
+    var progHeadersList = $('<ul/>');
+    expansionDiv.append(progHeadersList);
+    for (phi in elf.header.programHeaders) {
+      var ph = elf.header.programHeaders[phi];
+      var phlstr = '<li>Type: ' + Elf.PhType[ph.type] + '</li>';
+      var phl = $(phlstr);
+      progHeadersList.append(phl);
+    }
+
+    expansionDiv.append('<H5>Section Headers</H5>');
+    //fill in expansionDiv with section and program headers
+    var sectionHeadersList = $('<ul/>');
+    expansionDiv.append(sectionHeadersList);
+    for (shi in elf.header.sectionHeaders) {
+      var sh = elf.header.sectionHeaders[shi];
+      var shlstr = '<li>Type: ' + Elf.ShType[sh.type] + '</li>';
+      var shl = $(shlstr);
+      sectionHeadersList.append(shl);
+    }
 }
