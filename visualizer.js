@@ -2,7 +2,7 @@
 $(document).ready(attachVisualizers);
 
 function attachVisualizers() {
-    var divs = $("div.binaryVisualizer");
+    var divs = $('div.binaryVisualizer');
     divs.empty();
     divs.each(function(index) {
         attachVisualizer(this, index);
@@ -12,7 +12,7 @@ function attachVisualizers() {
 function attachVisualizer(domElem, index) {
 
     if (!domElem) {
-        console.log("Found domElement empty: " + domElem)
+        console.log('Found domElement empty: ' + domElem)
         return
     }
 
@@ -68,27 +68,27 @@ function getFileDropHandler(processFiles) {
 
 function getFileProcessor(index) {
     return function processFiles(files) {
-        document.getElementById('file_collector' + index).style = "display:none"
-        var fileElem = document.getElementById('filename' + index)
-        fileElem.style = "display:block"
-        var analysisElem = document.getElementById('analysis' + index)
-        analysisElem.style = "display:block"
-        var canvasElem = document.getElementById("visualization" + index)
-        canvasElem.style = "display:block"
+        document.getElementById('file_collector' + index).style = 'display:none';
+        var fileElem = document.getElementById('filename' + index);
+        fileElem.style = "display:block";
+        var analysisElem = document.getElementById('analysis' + index);
+        analysisElem.style = "display:block";
+        var canvasElem = document.getElementById("visualization" + index);
+        canvasElem.style = "display:block";
 
         if (files.length != 1) {
             fileElem.innerHTML = 'Number of files selected must be exactly 1. We found: ' + files.length;
-            return
+            return;
         }
 
         var f = files[0];
         var reader = new FileReader();
         reader.onabort = function(event) {
-            $(fileElem).append(" Aborted!")
+            $(fileElem).append(' Aborted!');
         }
         reader.onerror = function(event) {
-            console.log(event)
-            $(fileElem).append(" Error! View Console log for error details.")
+            console.log(event);
+            $(fileElem).append(' Error! View Console log for error details.');
         }
         reader.onprogress = function (event) {
             fileElem.innerHTML = '<strong>' + escape(f.name) + '</strong> - Begun loading of ' + f.size + ' bytes';
@@ -120,7 +120,7 @@ function analyzeResultErrorCapture(dataArray, analysisElem, canvasElem) {
 
 function analyzeResult(dataArray, analysisElem, canvasElem) {
     dataPublic = dataArray
-    analysisElem.innerHTML = "Analysing data..."
+    analysisElem.innerHTML = 'Analysing data...';
 
     var ks = new KaitaiStream(dataArray, 0)
     elf = new Elf(ks)
@@ -154,12 +154,91 @@ function analyzeResult(dataArray, analysisElem, canvasElem) {
 
     expansionDiv.append('<H5>Section Headers</H5>');
     //fill in expansionDiv with section and program headers
-    var sectionHeadersList = $('<ul/>');
-    expansionDiv.append(sectionHeadersList);
+    var sectionHeadersTable = $('<table/>');
+    expansionDiv.append(sectionHeadersTable);
+    sectionHeadersTable.append('<thead><tr>' +
+    '<th>Name</th>' +
+    '<th>Type</th>' +
+    '<th>Flags</th>' +
+    '<th>Addr</th>' +
+    '<th>Align</th>' +
+    '<th>EntrySize</th>' +
+    '<th>Offset</th>' +
+    '<th>Size</th>' +
+    +'</tr></thead>');
+
+    var tbody = $('<tbody/>');
+    sectionHeadersTable.append(tbody);
+
     for (shi in elf.header.sectionHeaders) {
       var sh = elf.header.sectionHeaders[shi];
-      var shlstr = '<li>Type: ' + Elf.ShType[sh.type] + '</li>';
-      var shl = $(shlstr);
-      sectionHeadersList.append(shl);
+      var shlstr = '<tr>' +
+        '<td>' + sh.name + '</td>' +
+        '<td>' + Elf.ShType[sh.type] + '</td>' +
+        '<td>' + sh.flags + interpretFlags(sh.flags) + '</td>' +
+        '<td>' + sh.addr + '</td>' +
+        '<td>' + sh.align + '</td>' +
+        '<td>' + sh.entrySize + '</td>' +
+        '<td>' + sh.offset + '</td>' +
+        '<td>' + sh.size + '</td>' +
+        '</tr>';
+      var tr = $(shlstr);
+      tbody.append(tr);
     }
+}
+
+// Copied from: https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#Section_header
+ElfFlags = Object.freeze({
+  SHF_WRITE: 0x1,
+  SHF_ALLOC: 0x2,
+  SHF_EXECINSTR: 0x4,
+  SHF_MERGE: 0x10,
+  SHF_STRINGS: 0x20,
+  SHF_INFO_LINK: 0x40,
+  SHF_LINK_ORDER: 0x80,
+  SHF_OS_NONCONFORMING: 0x100,
+  SHF_GROUP: 0x200,
+  SHF_TLS: 0x400,
+  SHF_MASKOS: 0x0ff00000,
+  SHF_MASKPROC: 0xf0000000,
+  SHF_ORDERED: 0x4000000,
+  SHF_EXCLUDE: 0x8000000,
+
+  0x1: "SHF_WRITE",
+  0x2: "SHF_ALLOC",
+  0x4: "SHF_EXECINSTR",
+  0x10: "SHF_MERGE",
+  0x20: "SHF_STRINGS",
+  0x40: "SHF_INFO_LINK",
+  0x80: "SHF_LINK_ORDER",
+  0x100: "SHF_OS_NONCONFORMING",
+  0x200: "SHF_GROUP",
+  0x400: "SHF_TLS",
+  0x0ff00000: "SHF_MASKOS",
+  0xf0000000: "SHF_MASKPROC",
+  0x4000000: "SHF_ORDERED",
+  0x8000000: "SHF_EXCLUDE",
+});
+
+function interpretFlags(flags) {
+  var fstr = '';
+  var first = true;
+
+  for (key in ElfFlags) {
+    if (flags & key) {
+
+      if (first) {
+        first = false;
+      } else {
+        fstr = fstr + ' | ';
+      }
+
+      fstr = fstr + ElfFlags[key];
+    }
+  }
+
+  if (fstr != '') {
+    fstr = '(' + fstr + ')';
+  }
+  return fstr
 }
