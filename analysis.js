@@ -135,20 +135,49 @@ function analyzeResult(dataArray, analysisElem, canvasElem) {
       tbody.append(tr);
     }
 
-    disasmErrorCapture(dataArray, analysisElem, canvasElem)
+    disasmErrorCapture(elf, dataArray, analysisElem, canvasElem)
 
 }
 
-function disasmErrorCapture(dataArray, analysisElem, canvasElem) {
+function disasmErrorCapture(elf, dataArray, analysisElem, canvasElem) {
   try {
-    disasm(dataArray, analysisElem, canvasElem)
+    disasm(elf, dataArray, analysisElem, canvasElem)
   } catch (e) {
     analysisElem.innerHTML = 'Error when Analysing data: ' + e + '. '
     'This tool only processes 64-bit Linux <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> binaries.';
   }
 }
 
-function  disasm(dataArray, analysisElem, canvasElem) {
+function  disasm(elf, dataArray, analysisElem, canvasElem) {
+  for (shi in elf.header.sectionHeaders) {
+    var sh = elf.header.sectionHeaders[shi];
+    if (Elf.ShType[sh.type] == "PROGBITS" && sh.flags && ElfFlags["SHF_EXECINSTR"]) {
+
+        console.log("About to disassemble segment");
+        console.log(sh);
+        
+        var buffer = sh.body;
+        var offset = sh.offset;
+
+        // Initialize the decoder
+        var d = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
+
+        // Output: Array of cs.Instruction objects
+        var instructions = d.disasm(buffer, offset);
+
+        // Display results;
+        instructions.forEach(function (instr) {
+            console.log("0x%s:\t%s\t%s",
+                instr.address.toString(16),
+                instr.mnemonic,
+                instr.op_str
+            );
+        });
+
+        // Delete decoder
+        d.close();
+      }
+  }
 }
 
 
