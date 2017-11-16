@@ -22,7 +22,7 @@ function attachVisualizer(domElem, index) {
         '<div class="drop_zone" id="drop_zone' + index + '">Drop files here</div>' +
     '</div>' +
     '<span id="filename' + index + '" style="display:none"></span>' +
-    '<span id="analysis' + index + '" style="display:none"></span>' +
+    '<div id="analysis' + index + '" style="display:none"></div>' +
     '<canvas class="visualization" id="visualization' + index + '" style="display:none"></canvas>';
 
     var jqThis = $(domElem)
@@ -101,7 +101,6 @@ function getFileProcessor(index) {
 
         reader.onload = function(event) {
             fileElem.innerHTML = '<strong>' + escape(f.name) + '</strong> - Loaded all ' + f.size + ' bytes';
-            console.log(event.target.result);
             analyzeResultErrorCapture(event.target.result, analysisElem, canvasElem)
         }
 

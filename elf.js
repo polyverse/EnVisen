@@ -1193,6 +1193,22 @@ var Elf = (function() {
           break;
         }
       }
+      Object.defineProperty(ProgramHeader.prototype, 'body', {
+        get: function() {
+          if (this._m_body !== undefined)
+            return this._m_body;
+          var io = this._root._io;
+          var _pos = io.pos;
+          io.seek(this.offset);
+          if (this._is_le) {
+            this._m_body = io.readBytes(this.memsz);
+          } else {
+            this._m_body = io.readBytes(this.memsz);
+          }
+          io.seek(_pos);
+          return this._m_body;
+        }
+      });
 
       return ProgramHeader;
     })();

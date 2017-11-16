@@ -36,33 +36,42 @@ ElfFlags = Object.freeze({
 
 
 function analyzeResultErrorCapture(dataArray, analysisElem, canvasElem) {
+  var errorElem = $("<span/>")
+  $(analysisElem).append(errorElem);
+
   try {
-    analyzeResult(dataArray, analysisElem, canvasElem)
+      var elfElem = $("<div/>");
+      $(analysisElem).append(elfElem)
+      var elf = analyzeElf(dataArray, elfElem, canvasElem)
+
+      var ropElem=$("<div/>")
+      $(analysisElem).append(ropElem);
+      findRopThroughWorker(elf, ropElem)
   } catch (e) {
-    analysisElem.innerHTML = 'Error when Analysing data: ' + e + '. '
-    'This tool only processes 64-bit Linux <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> binaries.';
+    errorElem.append('Error when Analysing data: <b>' + e + '</b>. ' +
+    'This tool only processes 64-bit Linux ' +
+    '<a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> binaries.');
   }
 }
 
-function analyzeResult(dataArray, analysisElem, canvasElem) {
-    dataPublic = dataArray
-    analysisElem.innerHTML = 'Analysing data...';
+function analyzeElf(dataArray, elfElem, canvasElem) {
+    elfElem.innerHTML = 'Analysing data...';
 
     var ks = new KaitaiStream(dataArray, 0)
     elf = new Elf(ks)
-    analysisElem.innerHTML =
-    '<i>Type</i>: <b>' + Elf.ObjType[elf.header.eType] +
+    elfElem.append(
+    '<span><i>Type</i>: <b>' + Elf.ObjType[elf.header.eType] +
     '</b>, <i>Machine</i>: <b>' + Elf.Machine[elf.header.machine] +
     '</b>, <i>Bits</i>: <b>' + Elf.Bits[elf.bits] +
     '</b>, <i>Endian</i>: <b>' + Elf.Endian[elf.endian] +
     '</b>, <i>ABI</i>: <b>' + Elf.OsAbi[elf.abi] +
     '</b>, <i>ABI Version</i>: <b>' + elf.abiVersion +
-    '</b>.<br/>';
+    '</b>.</span><br/>');
 
     var expando = $('<a href="#">Show/Hide Details</a>')
     var expansionDiv = $('<div style="display: none"></div>');
-    $(analysisElem).append(expando)
-    $(analysisElem).append(expansionDiv)
+    elfElem.append(expando)
+    elfElem.append(expansionDiv)
     expando.click(function() {
       expansionDiv.toggle();
     });
@@ -89,7 +98,7 @@ function analyzeResult(dataArray, analysisElem, canvasElem) {
       var ph = elf.header.programHeaders[phi];
       var phlstr = '<tr>' +
       '<td>' + Elf.PhType[ph.type] + '</td>' +
-      '<td>' + ph.flags + interpretFlags(ph.flags) + '</td>' +
+      '<td>' + ph.flags64 + interpretFlags(ph.flags64) + '</td>' +
       '<td>' + ph.offset + '</td>' +
       '<td>' + ph.paddr + '</td>' +
       '<td>' + ph.vaddr + '</td>' +
@@ -135,51 +144,51 @@ function analyzeResult(dataArray, analysisElem, canvasElem) {
       tbody.append(tr);
     }
 
-    disasmErrorCapture(elf, dataArray, analysisElem, canvasElem)
-
+    return elf;
 }
 
-function disasmErrorCapture(elf, dataArray, analysisElem, canvasElem) {
+function findRopThroughWorker(elf, ropElem) {
   try {
-    disasm(elf, dataArray, analysisElem, canvasElem)
-  } catch (e) {
-    analysisElem.innerHTML = 'Error when Analysing data: ' + e + '. '
-    'This tool only processes 64-bit Linux <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> binaries.';
-  }
-}
+    if (typeof(Worker) !== "undefined") {
 
-function  disasm(elf, dataArray, analysisElem, canvasElem) {
-  for (shi in elf.header.sectionHeaders) {
-    var sh = elf.header.sectionHeaders[shi];
-    if (Elf.ShType[sh.type] == "PROGBITS" && sh.flags && ElfFlags["SHF_EXECINSTR"]) {
+      var ropStatus = $("<span/>");
+      ropElem.append(ropStatus);
 
-        console.log("About to disassemble segment");
-        console.log(sh);
-        
-        var buffer = sh.body;
-        var offset = sh.offset;
-
-        // Initialize the decoder
-        var d = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
-
-        // Output: Array of cs.Instruction objects
-        var instructions = d.disasm(buffer, offset);
-
-        // Display results;
-        instructions.forEach(function (instr) {
-            console.log("0x%s:\t%s\t%s",
-                instr.address.toString(16),
-                instr.mnemonic,
-                instr.op_str
-            );
-        });
-
-        // Delete decoder
-        d.close();
+      var segments = []
+      for (var phi in elf.header.programHeaders) {
+        var ph = elf.header.programHeaders[phi];
+        if (ph.flags64 & ElfFlags["SHF_EXECINSTR"]) {
+          var segment = {
+            offset: ph.offset,
+            size: ph.memsz,
+            vaddr: ph.vaddr,
+            opcodes: ph.body,
+          };
+          segments.push(segment);
+        }
       }
+
+      var worker = new Worker("gadget.js");
+      worker.postMessage(segments);
+      worker.onmessage = function(e) {
+        if (e.data.gadets) {
+          var gadgets = e.data.gadgets;
+          console.log("Obtained gadgets from inner worker...");
+        } else {
+            ropStatus.append(e.data.status);
+            ropStatus.append("<br/>");
+        }
+      }
+    } else {
+        throw "No Worker support in this browser. ROP analysis is an expensive" +
+        " operation, and should not be performed inline with your event loop.";
+    }
+  } catch (e) {
+    analysisElem = 'Error when Analysing data: ' + e + '. '
+    'This tool only processes 64-bit Linux <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> binaries.';
+    throw e;
   }
 }
-
 
 function interpretFlags(flags) {
   var fstr = '';
