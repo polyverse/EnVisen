@@ -19,7 +19,7 @@ function attachVisualizer(domElem, index) {
     var visualizerHtml =
     '<div class="file_collector" id="file_collector' + index + '">' +
         '<input class="file" type="file" id="file' + index + '"/>' +
-        '<div class="drop_zone" id="drop_zone' + index + '">Drop files here</div>' +
+        '<div class="drop_zone" id="drop_zone' + index + '">Drop file here</div>' +
     '</div>' +
     '<span id="filename' + index + '" style="display:none"></span>' +
     '<div id="analysis' + index + '" style="display:none"></div>' +
@@ -51,7 +51,6 @@ function handleDragOver(evt) {
 function getFileSelectHandler(processFiles) {
     return function handleFileSelect(evt) {
         var files = evt.target.files; // FileList object
-
         processFiles(files)
     }
 }

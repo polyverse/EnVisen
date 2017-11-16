@@ -1,9 +1,18 @@
 
+self.importScripts("capstone.min.js");
+
+//Main Webworker handler
+ onmessage = function (e) {
+   console.log(e.data);
+   gadgets = getAllGadgets(e.data);
+   postMessage({status: "Found gadgets", gadgets: gadgets});
+ }
 
 function  getAllGadgets(segments) {
   var gadgets = [];
   for (si in segments) {
-    postMessage({status: "Finding gadgets in segment " + si + " of " + segments.length});
+    var offByOne = parseInt(si)+1;
+    postMessage({status: "Finding gadgets in segment " + offByOne + " of " + segments.length});
     var segment = segments[si];
     localgadgets = getAllGadgetsInSection(segment);
     appendAll(gadgets, localgadgets);
@@ -17,11 +26,8 @@ function  getAllGadgets(segments) {
 function getAllGadgetsInSection(section) {
  var gadgets = [];
 
- postMessage({status: "Finding ROP gadgets in section."});
  appendAll(gadgets, addROPGadgets(section));
- postMessage({status: "Finding JOP gadgets in section."});
  appendAll(gadgets, addJOPGadgets(section));
- postMessage({status: "Finding SYS gadgets in section."});
  appendAll(gadgets, addSYSGadgets(section));
 
  postMessage({status: "Found " + gadgets.length + " gadgets of all kinds."});
@@ -46,12 +52,12 @@ console.log(gadgets);
 function addROPGadgets(section) {
 
        gadgets = [
-                       [toBytes("\xc3"), 1, 1],
-                       [toBytes("\xc2[\x00-\xff]{2}"), 3, 1],
-                       [toBytes("\xcb"), 1, 1],
-                       [toBytes("\xca[\x00-\xff]{2}"), 3, 1],
-                       [toBytes("\xf2\xc3"), 2, 1],
-                       [toBytes("\xf2\xc2[\x00-\xff]{2}"), 4, 1]
+                       [toMatcher("\xc3"), 1, 1],
+                       [toMatcher("\xc2[\x00-\xff]{2}"), 3, 1],
+                       [toMatcher("\xcb"), 1, 1],
+                       [toMatcher("\xca[\x00-\xff]{2}"), 3, 1],
+                       [toMatcher("\xf2\xc3"), 2, 1],
+                       [toMatcher("\xf2\xc2[\x00-\xff]{2}"), 4, 1]
                   ];
 
        return gadgetsFinding(section, gadgets);
@@ -59,28 +65,28 @@ function addROPGadgets(section) {
 
 function addJOPGadgets(section) {
              gadgets = [
-                                [toBytes("\xff[\x20\x21\x22\x23\x26\x27]{1}"), 2, 1],
-                                [toBytes("\xff[\xe0\xe1\xe2\xe3\xe4\xe6\xe7]{1}"), 2, 1],
-                                [toBytes("\xff[\x10\x11\x12\x13\x16\x17]{1}"), 2, 1],
-                                [toBytes("\xff[\xd0\xd1\xd2\xd3\xd4\xd6\xd7]{1}"), 2, 1],
-                                [toBytes("\xf2\xff[\x20\x21\x22\x23\x26\x27]{1}"), 3, 1],
-                                [toBytes("\xf2\xff[\xe0\xe1\xe2\xe3\xe4\xe6\xe7]{1}"), 3, 1],
-                                [toBytes("\xf2\xff[\x10\x11\x12\x13\x16\x17]{1}"), 3, 1],
-                                [toBytes("\xf2\xff[\xd0\xd1\xd2\xd3\xd4\xd6\xd7]{1}"), 3, 1]
+                                [toMatcher("\xff[\x20\x21\x22\x23\x26\x27]{1}"), 2, 1],
+                                [toMatcher("\xff[\xe0\xe1\xe2\xe3\xe4\xe6\xe7]{1}"), 2, 1],
+                                [toMatcher("\xff[\x10\x11\x12\x13\x16\x17]{1}"), 2, 1],
+                                [toMatcher("\xff[\xd0\xd1\xd2\xd3\xd4\xd6\xd7]{1}"), 2, 1],
+                                [toMatcher("\xf2\xff[\x20\x21\x22\x23\x26\x27]{1}"), 3, 1],
+                                [toMatcher("\xf2\xff[\xe0\xe1\xe2\xe3\xe4\xe6\xe7]{1}"), 3, 1],
+                                [toMatcher("\xf2\xff[\x10\x11\x12\x13\x16\x17]{1}"), 3, 1],
+                                [toMatcher("\xf2\xff[\xd0\xd1\xd2\xd3\xd4\xd6\xd7]{1}"), 3, 1]
                        ];
              return gadgetsFinding(section, gadgets);
    }
 
  function addSYSGadgets( section) {
          gadgets = [
-                            [toBytes("\xcd\x80"), 2, 1],
-                            [toBytes("\x0f\x34"), 2, 1],
-                            [toBytes("\x0f\x05"), 2, 1],
-                            [toBytes("\x65\xff\x15\x10\x00\x00\x00"), 7, 1],
-                            [toBytes("\xcd\x80\xc3"), 3, 1],
-                            [toBytes("\x0f\x34\xc3"), 3, 1],
-                            [toBytes("\x0f\x05\xc3"), 3, 1],
-                            [toBytes("\x65\xff\x15\x10\x00\x00\x00\xc3"), 8, 1]
+                            [toMatcher("\xcd\x80"), 2, 1],
+                            [toMatcher("\x0f\x34"), 2, 1],
+                            [toMatcher("\x0f\x05"), 2, 1],
+                            [toMatcher("\x65\xff\x15\x10\x00\x00\x00"), 7, 1],
+                            [toMatcher("\xcd\x80\xc3"), 3, 1],
+                            [toMatcher("\x0f\x34\xc3"), 3, 1],
+                            [toMatcher("\x0f\x05\xc3"), 3, 1],
+                            [toMatcher("\x65\xff\x15\x10\x00\x00\x00\xc3"), 8, 1]
                    ];
 
          return gadgetsFinding(section, gadgets);
@@ -116,13 +122,16 @@ function passCleanX86(gadgets, multibr) {
      var PREV_BYTES = 9; //# Number of bytes prior to the gadget to store.
      var ret = [];
 
+     var opcodesStr = encodeArray(section["opcodes"]);
      for (var gadi in gadgets) {
          var gad = gadgets[gadi];
          var oprg = new RegExp(gad[C_OP], "g");
          var opri = new RegExp(gad[C_OP], "i");
-         debugger;
-         var allRefRet = matchPositions(oprg, section["opcodes"])
-         postMessage({status: "Found " + allRefRet + " matching candidates..."});
+         var allRefRet = matchPositions(oprg, opcodesStr)
+         if (allRefRet.length > 0) {
+           postMessage({status: "Found " + allRefRet.length + " matching candidates..."});
+         }
+         console.log(allRefRet);
          for (refi in allRefRet) {
            var ref = allRefRet[refi];
            //ROPgadget's depth option goes here...
@@ -218,21 +227,14 @@ function appendAll(array1, array2) {
   }
 }
 
-function toBytes(str) {
-  var wrappedStr = new String(str);
-  var byteArray = [];
-  for (var i=0; i < wrappedStr.length; i++) {
-      byteArray.push(i);
-  }
-  return byteArray;
+function toMatcher(str) {
+  return str;
 }
 
-
-importScripts("capstone.min.js");
-
-//Main Webworker handler
- onmessage = function (e) {
-   console.log(e.data);
-   gadgets = getAllGadgets(e.data);
-   postMessage({status: "Found gadgets", gadgets: gadgets});
- }
+function encodeArray(uint8array) {
+  var myString = "";
+  for (var i=0; i<uint8array.length; i++) {
+      myString += String.fromCharCode(uint8array[i])
+  }
+  return myString;
+}

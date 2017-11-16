@@ -1,7 +1,7 @@
 
 
 // Copied from: https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#Section_header
-ElfFlags = Object.freeze({
+ElfShFlags = Object.freeze({
   SHF_WRITE: 0x1,
   SHF_ALLOC: 0x2,
   SHF_EXECINSTR: 0x4,
@@ -33,6 +33,18 @@ ElfFlags = Object.freeze({
   0x8000000: "SHF_EXCLUDE",
 });
 
+// Copied from: https://docs.oracle.com/cd/E19683-01/816-1386/6m7qcoblk/index.html#chapter6-tbl-39
+ElfPhFlags = Object.freeze({
+  PF_X: 0x1,
+  PF_W: 0x2,
+  PF_R: 0x4,
+  PF_MASKPROC: 0xf0000000,
+
+  0x1: "PF_X",
+  0x2: "PF_W",
+  0x4: "PF_R",
+  0xf0000000: "PF_MASKPROC"
+});
 
 
 function analyzeResultErrorCapture(dataArray, analysisElem, canvasElem) {
@@ -97,8 +109,8 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
     for (phi in elf.header.programHeaders) {
       var ph = elf.header.programHeaders[phi];
       var phlstr = '<tr>' +
-      '<td>' + Elf.PhType[ph.type] + '</td>' +
-      '<td>' + ph.flags64 + interpretFlags(ph.flags64) + '</td>' +
+      '<td>' + ph.type + " (" + Elf.PhType[ph.type] + ')</td>' +
+      '<td>' + ph.flags64 + interpretFlags(ph.flags64, ElfPhFlags) + '</td>' +
       '<td>' + ph.offset + '</td>' +
       '<td>' + ph.paddr + '</td>' +
       '<td>' + ph.vaddr + '</td>' +
@@ -133,7 +145,7 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
       var shlstr = '<tr>' +
         '<td>' + sh.name + '</td>' +
         '<td>' + Elf.ShType[sh.type] + '</td>' +
-        '<td>' + sh.flags + interpretFlags(sh.flags) + '</td>' +
+        '<td>' + sh.flags + interpretFlags(sh.flags, ElfShFlags) + '</td>' +
         '<td>' + sh.addr + '</td>' +
         '<td>' + sh.align + '</td>' +
         '<td>' + sh.entrySize + '</td>' +
@@ -151,19 +163,28 @@ function findRopThroughWorker(elf, ropElem) {
   try {
     if (typeof(Worker) !== "undefined") {
 
+      var expando = $('<a href="#">Show/Hide Rop Analysis Progress</a><br/>')
       var ropStatus = $("<span/>");
+      ropElem.append(expando)
       ropElem.append(ropStatus);
+      expando.click(function() {
+        ropStatus.toggle();
+      });
+
+      ropStatus.append("Converting ELF program segments " +
+        "into struct for ROP finder to work in a Worker process..<br/>");
 
       var segments = []
       for (var phi in elf.header.programHeaders) {
         var ph = elf.header.programHeaders[phi];
-        if (ph.flags64 & ElfFlags["SHF_EXECINSTR"]) {
+        if (ph.flags64 & ElfPhFlags["PF_X"]){
           var segment = {
             offset: ph.offset,
             size: ph.memsz,
             vaddr: ph.vaddr,
             opcodes: ph.body,
           };
+          console.log(segment);
           segments.push(segment);
         }
       }
@@ -190,11 +211,11 @@ function findRopThroughWorker(elf, ropElem) {
   }
 }
 
-function interpretFlags(flags) {
+function interpretFlags(flags, consts) {
   var fstr = '';
   var first = true;
 
-  for (key in ElfFlags) {
+  for (key in consts) {
     if (flags & key) {
 
       if (first) {
@@ -203,7 +224,7 @@ function interpretFlags(flags) {
         fstr = fstr + ' | ';
       }
 
-      fstr = fstr + ElfFlags[key];
+      fstr = fstr + consts[key];
     }
   }
 
