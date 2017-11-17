@@ -35,4 +35,6 @@ It gives you some assurances for paranoid people:
 * Clusterize for showing LARGE tables fast! https://clusterize.js.org/
 * Slightly modified version of tinyprogressbar: https://github.com/knadh/tinyprogressbar
 * jQuery block UI plug: http://malsup.com/jquery/block/#overview
+* ROP JSON saving feature from: https://github.com/eligrey/FileSaver.js
+* Blob.js for FileSaver: https://github.com/eligrey/Blob.js
 * Read this for help on what all that ELF stuff means: http://www.cirosantilli.com/elf-hello-world/#section-vs-segment

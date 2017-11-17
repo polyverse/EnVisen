@@ -50,3 +50,9 @@
 tr:nth-of-type(even) {
     background: #F9F9F9;
 }
+
+.save {
+  text-align: right;
+  float: right;
+  font-size: 50%;
+}

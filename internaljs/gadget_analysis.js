@@ -46,7 +46,7 @@ ElfPhFlags = Object.freeze({
   0xf0000000: "PF_MASKPROC"
 });
 
-function analyzeResultErrorCapture(index, dataArray, analysisElem, reporter) {
+function analyzeResultErrorCapture(index, filename, dataArray, analysisElem, reporter) {
   var errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
 
@@ -56,10 +56,25 @@ function analyzeResultErrorCapture(index, dataArray, analysisElem, reporter) {
     var ropElem=$("<div/>")
     $(analysisElem).append(ropElem);
 
+    if (filename.endsWith(".json")) {
+      //try {
+        reporter.updateStatus("Filename ends with .json. Testing whether data is JSON...");
+        var decoder = new TextDecoder('utf8');
+        var gadgets = JSON.parse(decoder.decode(dataArray));
+        reporter.updateStatus("That worked. Rendering Table from gadgets found in json...");
+        setTimeout(function() {
+          renderGadgetsTableInWorker(gadgets, filename, ropElem, reporter);
+        }, 20);
+        return;
+      //} catch (e) {
+        console.log(e);
+        reporter.updateStatus("Data is not JSON. Interpreting as ELF...");
+      //}
+    }
+
     var elf = analyzeElf(dataArray, elfElem, reporter)
     reporter.completedElf();
-
-    findRopThroughWorker(elf, ropElem, reporter)
+    findRopThroughWorker(elf, filename, ropElem, reporter)
 }
 
 function analyzeElf(dataArray, elfElem, reporter) {
@@ -173,7 +188,7 @@ function analyzeElf(dataArray, elfElem, reporter) {
     return elf;
 }
 
-function findRopThroughWorker(elf, ropElem, reporter) {
+function findRopThroughWorker(elf, filename, ropElem, reporter) {
     if (typeof(Worker) !== "undefined") {
 
       reporter.updateStatus("Converting ELF program segments " +
@@ -202,7 +217,7 @@ function findRopThroughWorker(elf, ropElem, reporter) {
           worker.terminate();
           reporter.updateStatus("Rendering Table...");
           setTimeout(function() {
-            renderGadgetsTableInWorker(gadgets, ropElem, reporter);
+            renderGadgetsTableInWorker(gadgets, filename + ".json", ropElem, reporter);
           }, 20);
         }
       }
@@ -212,13 +227,21 @@ function findRopThroughWorker(elf, ropElem, reporter) {
     }
 }
 
-function renderGadgetsTableInWorker(gadgets, ropElem, reporter) {
-  var expando = $('<a href="#">Show/Hide Rop Gadget Table</a><br/>')
+function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
+  var expando = $('<a href="#">Show/Hide Rop Gadget Table</a>')
+  ropElem.append(expando);
+
+  var save = $('<a href="#" class="save">(Save as JSON)</a><br/>')
+  save.click(function() {
+      saveAs(new Blob([JSON.stringify(gadgets, null, 2)], {type: "application/json"})
+    		, jsonFileName);
+  })
+  ropElem.append(save);
+
   var ropTableWrapper = $('<div class="clusterize-scroll">');
   var ropTable = $('<table style="display: block"/ class="ropTable">');
   ropTableWrapper.append(ropTable);
 
-  ropElem.append(expando);
   ropElem.append(ropTableWrapper);
   expando.click(function() {
     ropTableWrapper.toggle();

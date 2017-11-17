@@ -18,8 +18,9 @@ function attachVisualizer(domElem, index) {
     '<div class="file-collector" id="file-collector' + index + '">' +
       '<div class="file-title" id="file-title' + index + '">'+title+'</div>' +
       '<p>Select a file or drag/drop a file on the selector  ' +
-      'below, to get a complete ELF expansion, along with ROP gadget table out of it.</p></br>' +
-
+      'below to begin analysis. Provide a 64-bit Linux ELF binary '
+      +'to get generate a ROP gadget table from it (savable as JSON). '+
+      'You may also provide a saved ROP JSON to avoid reparsing the same binary.</p></br>' +
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
     '</div>' +
@@ -135,12 +136,20 @@ function getFileProcessor(index) {
         reporter.completedRop = function()  {
           updateStatusAndProgress(3, "Completed ROP analysis!");
         }
+        reporter.completedJsonLoad = function() {
+          updateStatusAndProgress(3, "Completed Loading JSON ROP data!");
+        }
         reporter.completedAnalysis = function()  {
           updateStatusAndProgress(4, "Completed all analysis!");
 
           //unblock the next one
-          nindex = index+1;
-          $("#file-collector" + nindex).unblock();
+          var nindex = index+1;
+          var nextCollector = $("#file-collector" + nindex);
+          if (nextCollector.length > 0) {
+            nextCollector.unblock();
+          } else {
+            setTimeout(launchComparator, 10);
+          }
         }
 
         progressBarElem.click(function() {
@@ -167,7 +176,7 @@ function getFileProcessor(index) {
         }
         reader.onload = function(event) {
           reporter.completedFileLoad();
-          analyzeResultErrorCapture(index, event.target.result, analysisElem, reporter);
+          analyzeResultErrorCapture(index, f.name, event.target.result, analysisElem, reporter);
         }
 
         fileElem.append('<strong>' + escape(f.name) + '</strong>');
