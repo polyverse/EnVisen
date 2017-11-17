@@ -46,7 +46,6 @@ ElfPhFlags = Object.freeze({
   0xf0000000: "PF_MASKPROC"
 });
 
-
 function analyzeResultErrorCapture(dataArray, analysisElem, canvasElem) {
   var errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
@@ -89,18 +88,21 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
     });
 
     expansionDiv.append('<H5>Program Headers</H5>');
+    var tableWrapper = $('<div class="scrollableWrapper"/>');
+    expansionDiv.append(tableWrapper);
+
     //fill in expansionDiv with section and program headers
     var progHeadersTable = $('<table/>');
-    expansionDiv.append(progHeadersTable);
+    tableWrapper.append(progHeadersTable);
     progHeadersTable.append('<thead><tr>' +
     '<th>Type</th>' +
     '<th>Flags</th>' +
     '<th>Offset</th>' +
-    '<th>Physical Address</th>' +
-    '<th>Virtual Address</th>' +
+    '<th>PAddr</th>' +
+    '<th>VAddr</th>' +
     '<th>Align</th>' +
-    '<th>File Image Size</th>' +
-    '<th>Memory Image Size</th>' +
+    '<th>Filesz</th>' +
+    '<th>Memsz</th>' +
     +'</tr></thead>');
 
     var tbody = $('<tbody/>');
@@ -123,9 +125,12 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
     }
 
     expansionDiv.append('<H5>Section Headers</H5>');
+    var tableWrapper = $('<div class="scrollableWrapper"/>');
+    expansionDiv.append(tableWrapper);
+
     //fill in expansionDiv with section and program headers
     var sectionHeadersTable = $('<table/>');
-    expansionDiv.append(sectionHeadersTable);
+    tableWrapper.append(sectionHeadersTable);
     sectionHeadersTable.append('<thead><tr>' +
     '<th>Name</th>' +
     '<th>Type</th>' +
@@ -214,10 +219,9 @@ function findRopThroughWorker(elf, ropElem) {
 }
 
 function renderGadgetsTable(gadgets, ropElem) {
-
   var expando = $('<a href="#">Show/Hide Rop Gadget Table</a><br/>')
   var ropTableWrapper = $('<div class="scrollableWrapper">');
-  var ropTable = $('<table style="display: block"/>');
+  var ropTable = $('<table style="display: block"/ class="ropTable">');
   ropTableWrapper.append(ropTable);
   ropElem.append(expando)
   ropElem.append(ropTableWrapper);
@@ -233,11 +237,12 @@ function renderGadgetsTable(gadgets, ropElem) {
   tBody = $("<tbody>");
 
   for (var gi in gadgets) {
-    var gadget = gadgets[gi];
-    tBody.append('<tr>'+
+    var tr =$('<tr>'+
     '<td>' + gadget.vaddr + '</td>' +
     '<td>' + gadget.gadget + '</td>' +
-    +'</tr>');
+    +'</tr>')
+
+    tBody.append(tr);
   }
 
   ropTable.append(tBody);
