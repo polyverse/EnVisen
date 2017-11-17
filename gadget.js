@@ -3,20 +3,33 @@ self.importScripts("capstone.min.js");
 
 //Main Webworker handler
  onmessage = function (e) {
-   console.log(e.data);
    gadgets = getAllGadgets(e.data);
    postMessage({status: "Found gadgets", gadgets: gadgets});
  }
 
 function  getAllGadgets(segments) {
   var gadgets = [];
+
   for (si in segments) {
     var offByOne = parseInt(si)+1;
     postMessage({status: "Finding gadgets in segment " + offByOne + " of " + segments.length});
     var segment = segments[si];
-    localgadgets = getAllGadgetsInSection(segment);
+    var localgadgets = getAllGadgetsInSection(segment);
+    postMessage({status: "Found " +localgadgets.length+ " gadgets in segment"});
     appendAll(gadgets, localgadgets);
   }
+
+  //# Pass clean single instruction and unknown instructions
+  postMessage({status: "Cleaning gadgets (removing blacklisted ones, false positives, redundant, etc.) from " + gadgets.length + " total gadgets."});
+  gadgets = passCleanX86(gadgets)
+
+  //# Delete duplicate gadgets
+  postMessage({status: "Deleting duplicate gadgets from " + gadgets.length + " total gadgets." });
+  gadgets = deleteDuplicateGadgets(gadgets)
+
+  //# Sorted alphabetically
+  postMessage({status: "Sorting " +gadgets.length+ " gadgets alphabetically"});
+  gadgets = alphaSortgadgets(gadgets)
 
   return gadgets;
 }
@@ -26,26 +39,16 @@ function  getAllGadgets(segments) {
 function getAllGadgetsInSection(section) {
  var gadgets = [];
 
- appendAll(gadgets, addROPGadgets(section));
- appendAll(gadgets, addJOPGadgets(section));
- appendAll(gadgets, addSYSGadgets(section));
-
- postMessage({status: "Found " + gadgets.length + " gadgets of all kinds."});
-
- //# Pass clean single instruction and unknown instructions
- postMessage({status: "Cleaning gadgets (removing blacklisted ones, false positives, redundant, etc.)"});
- gadgets = passCleanX86(gadgets)
-
-console.log(gadgets);
-
- //# Delete duplicate gadgets
- postMessage({status: "Deleting duplicate gadgets"});
-  //gadgets = deleteDuplicateGadgets(gadgets)
-
- //# Sorted alphabetically
- postMessage({status: "Sorting gadgets alphabetically"});
- //gadgets = alphaSortgadgets(gadgets)
-
+ var ropGadgets = addROPGadgets(section);
+ appendAll(gadgets, ropGadgets);
+ postMessage({status: "Found " + ropGadgets.length + " ROP gadgets."});
+ var jopGadgets = addJOPGadgets(section);
+ postMessage({status: "Found " + jopGadgets.length + " JOP gadgets."});
+ appendAll(gadgets, jopGadgets);
+ var sysGadgets = addSYSGadgets(section);
+ postMessage({status: "Found " + sysGadgets.length + " SYS gadgets."});
+ appendAll(gadgets, sysGadgets);
+ return gadgets;
 }
 
 
@@ -101,7 +104,7 @@ function passCleanX86(gadgets, multibr) {
          var insts = gadgetstr.split(" ; ");
          if (insts.length == 1 && !inArray(br, insts[0].split(" ")[0])) {
              continue
-         } if (!inArray(br, insts[insts.length-2].split(" ")[0])) {
+         } if (!inArray(br, insts[insts.length-1].split(" ")[0])) {
              continue
          } if (checkInstructionBlackListedX86(insts)) {
              continue
@@ -110,17 +113,19 @@ function passCleanX86(gadgets, multibr) {
          } if ((gadget["gadget"].match(/ret/g) || []).length > 1) {
              continue
          }
-         n += [gadget]
+         n.push(gadget);
      }
      return n
  }
 
  function gadgetsFinding(section, gadgets, offset) {
+     var offset = offset || 0;
      var C_OP    = 0;
      var C_SIZE  = 1;
      var C_ALIGN = 2;
      var PREV_BYTES = 9; //# Number of bytes prior to the gadget to store.
      var ret = [];
+     var md = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
 
      var opcodesStr = encodeArray(section["opcodes"]);
      for (var gadi in gadgets) {
@@ -128,10 +133,6 @@ function passCleanX86(gadgets, multibr) {
          var oprg = new RegExp(gad[C_OP], "g");
          var opri = new RegExp(gad[C_OP], "i");
          var allRefRet = matchPositions(oprg, opcodesStr)
-         if (allRefRet.length > 0) {
-           postMessage({status: "Found " + allRefRet.length + " matching candidates..."});
-         }
-         console.log(allRefRet);
          for (refi in allRefRet) {
            var ref = allRefRet[refi];
            //ROPgadget's depth option goes here...
@@ -139,7 +140,6 @@ function passCleanX86(gadgets, multibr) {
                  if ((section["vaddr"]+ref-(i*gad[C_ALIGN])) % gad[C_ALIGN] == 0) {
                      var opcode = section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]);
                      var decodes = [];
-                     var md = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
                      try {
                         decodes = md.disasm(opcode, section["vaddr"]+ref);
                       } catch (e) {
@@ -152,29 +152,29 @@ function passCleanX86(gadgets, multibr) {
                        gadget += (decode.mnemonic + " " + decode.op_str + " ; ").replace("  ", " ");
                        lastdecode = decode;
                      }
-                     if (!lastdecode || !opri.exec(lastdecode.bytes)) {
+                     if (!lastdecode || !opri.exec(encodeArray(lastdecode.bytes))) {
                              continue;
                      }
                      if (gadget.length > 0) {
-                         gadget = gadget.slice(0,gadget.length-4);
-                         off = offset;
-                         vaddr = off+section["vaddr"]+ref-(i*gad[C_ALIGN]);
-                         prevBytesAddr = Math.max(section["vaddr"], vaddr - PREV_BYTES);
-                         prevBytes = section["opcodes"].slice(prevBytesAddr-section["vaddr"],vaddr-section["vaddr"]);
-                         ret.push(
-                            {
-                            "vaddr" :  vaddr,
-                            "gadget" : gadget,
-                            "decodes" : decodes,
-                            "bytes": section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]),
-                            "prev": prevBytes
-                          });
+                         var gadget = gadget.slice(0,gadget.length-3);
+                         var off = offset;
+                         var vaddr = off+section["vaddr"]+ref-(i*gad[C_ALIGN]);
+                         var prevBytesAddr = Math.max(section["vaddr"], vaddr - PREV_BYTES);
+                         var prevBytes = section["opcodes"].slice(prevBytesAddr-section["vaddr"],vaddr-section["vaddr"]);
+                         var newGad = {
+                             "vaddr" :  vaddr,
+                             "gadget" : gadget,
+                             "decodes" : decodes,
+                             "bytes": section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]),
+                             "prev": prevBytes
+                           };
+                         ret.push(newGad);
                      }
-                    md.close();
                    }
                }
          }
      }
+     md.close();
      return ret;
 }
 
@@ -196,6 +196,7 @@ function checkInstructionBlackListedX86(insts) {
 function checkMultiBr(insts, br) {
     var count = 0
     for (insti in insts) {
+        var inst = insts[insti];
         if (inArray(br, inst.split()[0])) {
             count += 1
         }
@@ -237,4 +238,25 @@ function encodeArray(uint8array) {
       myString += String.fromCharCode(uint8array[i])
   }
   return myString;
+}
+
+
+function deleteDuplicateGadgets(currentGadgets) {
+    var gadgets_content_set = new Set();
+    var unique_gadgets = [];
+
+    for (gi in currentGadgets) {
+        var gadget = currentGadgets[gi];
+        var gad = gadget["gadget"]
+        if (gadgets_content_set.has(gad)) {
+            continue
+        }
+        gadgets_content_set.add(gad)
+        unique_gadgets.push(gadget);
+    }
+    return unique_gadgets
+}
+
+function alphaSortgadgets(currentGadgets) {
+    return currentGadgets;
 }

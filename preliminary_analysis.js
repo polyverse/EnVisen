@@ -80,7 +80,7 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
     '</b>, <i>ABI Version</i>: <b>' + elf.abiVersion +
     '</b>.</span><br/>');
 
-    var expando = $('<a href="#">Show/Hide Details</a>')
+    var expando = $('<a href="#">Show/Hide ELF Details</a>')
     var expansionDiv = $('<div style="display: none"></div>');
     elfElem.append(expando)
     elfElem.append(expansionDiv)
@@ -164,7 +164,7 @@ function findRopThroughWorker(elf, ropElem) {
     if (typeof(Worker) !== "undefined") {
 
       var expando = $('<a href="#">Show/Hide Rop Analysis Progress</a><br/>')
-      var ropStatus = $("<span/>");
+      var ropStatus = $('<span style="display: block"/>');
       ropElem.append(expando)
       ropElem.append(ropStatus);
       expando.click(function() {
@@ -184,7 +184,6 @@ function findRopThroughWorker(elf, ropElem) {
             vaddr: ph.vaddr,
             opcodes: ph.body,
           };
-          console.log(segment);
           segments.push(segment);
         }
       }
@@ -192,12 +191,15 @@ function findRopThroughWorker(elf, ropElem) {
       var worker = new Worker("gadget.js");
       worker.postMessage(segments);
       worker.onmessage = function(e) {
-        if (e.data.gadets) {
+        ropStatus.append(e.data.status);
+        ropStatus.append("<br/>");
+
+        if (e.data.gadgets) {
           var gadgets = e.data.gadgets;
-          console.log("Obtained gadgets from inner worker...");
-        } else {
-            ropStatus.append(e.data.status);
-            ropStatus.append("<br/>");
+          ropStatus.append("Rendering Table...");
+          ropStatus.append("<br/>");
+          renderGadgets(gadgets, ropElem)
+          ropStatus.toggle();
         }
       }
     } else {
@@ -210,6 +212,37 @@ function findRopThroughWorker(elf, ropElem) {
     throw e;
   }
 }
+
+function renderGadgets(gadgets, ropElem) {
+
+  var expando = $('<a href="#">Show/Hide Rop Gadget Table</a><br/>')
+  var ropTableWrapper = $('<div class="scrollableWrapper">');
+  var ropTable = $('<table style="display: block"/>');
+  ropTableWrapper.append(ropTable);
+  ropElem.append(expando)
+  ropElem.append(ropTableWrapper);
+  expando.click(function() {
+    ropTableWrapper.toggle();
+  });
+
+  ropTable.append('<thead><tr>' +
+  '<th>VAddr</th>' +
+  '<th>Gadget</th>' +
+  + '</tr></thead>');
+
+  tBody = $("<tbody>");
+
+  for (var gi in gadgets) {
+    var gadget = gadgets[gi];
+    tBody.append('<tr>'+
+    '<td>' + gadget.vaddr + '</td>' +
+    '<td>' + gadget.gadget + '</td>' +
+    +'</tr>');
+  }
+
+  ropTable.append(tBody);
+}
+
 
 function interpretFlags(flags, consts) {
   var fstr = '';

@@ -18,6 +18,7 @@ function attachVisualizer(domElem, index) {
 
     var visualizerHtml =
     '<div class="file_collector" id="file_collector' + index + '">' +
+    '<p>Select a file or drag/drop a file on the selector below, to get a complete ELF expansion, along with ROP gadget table out of it.</p></br>' +
         '<input class="file" type="file" id="file' + index + '"/>' +
         '<div class="drop_zone" id="drop_zone' + index + '">Drop file here</div>' +
     '</div>' +
