@@ -2,7 +2,6 @@ function renderGadgetsTable(gadgets, gadgetshash) {
   var group=1000;
   var rows = [];
   var newGadgetsHash = {};
-  console.log(gadgetshash)
   for (var gi in gadgets) {
     var gadget = gadgets[gi];
 
