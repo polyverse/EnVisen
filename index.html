@@ -4,25 +4,33 @@
     <meta charset="UTF-8">
     <title>EnVisen: Entropy Visualizer</title>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
-    <script src="visualizer.js"></script>
-    <script src="preliminary_analysis.js"></script>
-    <script src="elf.js"></script>
-    <link  rel="stylesheet" type="text/css"  href="visualizer.css"/>
+    <script src="externaljs/jquery.js"></script>
+    <script src="externaljs/jquery.blockui.js"></script>
+    <script src="internaljs/visualizer.js"></script>
+    <script src="internaljs/preliminary_analysis.js"></script>
+    <script src="externaljs/elf.js"></script>
+    <script type="text/javascript" src="externaljs/tinyprogressbar.js"></script>
+    <script type="text/javascript" src="externaljs/clusterize.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="externalcss/tinyprogressbar.css"/>
+    <link rel="stylesheet" type="text/css" href="externalcss/clusterize.css"/>
+    <link  rel="stylesheet" type="text/css"  href="internalcss/visualizer.css"/>
 </head>
 <body>
     <center><h4>EnVisen: Visualize Your Entropy</h4></center>
-    <div><a href="https://github.com/Polyverse/binary-entropy-visualizer">Visit us on Github.</a></div>
     <div>
       <div class="left">
-        <span>File 1</span>
-        <div class="binaryVisualizer"></div>
+        <div class="binaryVisualizer" data-title="Base File"></div>
       </div>
       <div class="right">
-        <span>File 2</span>
-        <div class="binaryVisualizer"></div>
+        <div class="binaryVisualizer" data-title="Compare File"></div>
       </div>
   </div>
-    <div class="footer">Developed, sponsored and maintained by <a href="https://polyverse.io">Polyverse Corporation</a>.</div>
+    <div class="footer">Developed, sponsored and maintained
+      by <a href="https://polyverse.io">Polyverse Corporation</a>. View source
+      code on <div><a href="https://github.com/Polyverse/binary-entropy-visualizer">
+        Github</a>.
+    </div>
+</div>
 </body>
 </html>

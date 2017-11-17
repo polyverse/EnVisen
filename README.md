@@ -16,8 +16,23 @@ be used to:
 python -m SimpleHTTPServer
 ```
 
+# Intended for offline use
+
+This repo intentionally clones/copies every single JS dependency. This means that you can
+run the index.html completely offline, internet-disconnected and do some cool analyzing.
+
+It gives you some assurances for paranoid people:
+* Run on a sandboxed/airgapped host to be assured there is no phone-home.
+* Be aware of every dependency.
+* Run in VMs easily without proxies and hosts and ports and NATs.
+* xcopy deploy!
+
 # Resources:
-1. Elf expansion is provided by: https://github.com/kaitai-io and the Elf Javascript template: http://formats.kaitai.io/elf/javascript.html
-2. Disassemly provided by Capstone.js: https://github.com/AlexAltea/capstone.js
-3. ROP-analysis code ported from: https://github.com/JonathanSalwan/ROPgadget
-4. Read this for help on what all that ELF stuff means: http://www.cirosantilli.com/elf-hello-world/#section-vs-segment
+* jQuery to tie everything together! https://jquery.com/
+* Elf expansion is provided by: https://github.com/kaitai-io and the Elf Javascript template: http://formats.kaitai.io/elf/javascript.html
+* Disassemly provided by Capstone.js: https://github.com/AlexAltea/capstone.js
+* ROP-analysis code ported from: https://github.com/JonathanSalwan/ROPgadget
+* Clusterize for showing LARGE tables fast! https://clusterize.js.org/
+* Slightly modified version of tinyprogressbar: https://github.com/knadh/tinyprogressbar
+* jQuery block UI plug: http://malsup.com/jquery/block/#overview
+* Read this for help on what all that ELF stuff means: http://www.cirosantilli.com/elf-hello-world/#section-vs-segment

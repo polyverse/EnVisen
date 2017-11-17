@@ -1,0 +1,28 @@
+.tinyProgressbar {
+	background: #f9f9f9;
+	padding: 5px 0;
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+	border-radius: 3px;
+}
+	.tinyProgressbar * {
+		z-index: 100;
+		position: relative;
+	}
+	.tinyProgressbar .value {
+		text-align: center;
+		display: block;
+	}
+	.tinyProgressbar .bar {
+		background: #9DDB29;
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 0;
+		transition: width 500ms ease-in-out;
+
+		padding: 0 !important;
+		margin: 0 !important;
+	}

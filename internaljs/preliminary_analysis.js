@@ -46,27 +46,24 @@ ElfPhFlags = Object.freeze({
   0xf0000000: "PF_MASKPROC"
 });
 
-function analyzeResultErrorCapture(dataArray, analysisElem, canvasElem) {
+function analyzeResultErrorCapture(index, dataArray, analysisElem, reporter) {
   var errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
 
-  try {
-      var elfElem = $("<div/>");
-      $(analysisElem).append(elfElem)
-      var elf = analyzeElf(dataArray, elfElem, canvasElem)
+    var elfElem = $("<div/>");
+    $(analysisElem).append(elfElem)
 
-      var ropElem=$("<div/>")
-      $(analysisElem).append(ropElem);
-      findRopThroughWorker(elf, ropElem)
-  } catch (e) {
-    errorElem.append('Error when Analysing data: <b>' + e + '</b>. ' +
-    'This tool only processes 64-bit Linux ' +
-    '<a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> binaries.');
-  }
+    var ropElem=$("<div/>")
+    $(analysisElem).append(ropElem);
+
+    var elf = analyzeElf(dataArray, elfElem, reporter)
+    reporter.completedElf();
+
+    findRopThroughWorker(elf, ropElem, reporter)
 }
 
-function analyzeElf(dataArray, elfElem, canvasElem) {
-    elfElem.innerHTML = 'Analysing data...';
+function analyzeElf(dataArray, elfElem, reporter) {
+    reporter.updateStatus('Analysing Elf data...');
 
     var ks = new KaitaiStream(dataArray, 0)
     elf = new Elf(ks)
@@ -88,12 +85,13 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
     });
 
     expansionDiv.append('<H5>Program Headers</H5>');
-    var tableWrapper = $('<div class="scrollableWrapper"/>');
+    var tableWrapper = $('<div class="clusterize-scroll"/>');
     expansionDiv.append(tableWrapper);
 
     //fill in expansionDiv with section and program headers
     var progHeadersTable = $('<table/>');
     tableWrapper.append(progHeadersTable);
+
     progHeadersTable.append('<thead><tr>' +
     '<th>Type</th>' +
     '<th>Flags</th>' +
@@ -105,9 +103,10 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
     '<th>Memsz</th>' +
     +'</tr></thead>');
 
-    var tbody = $('<tbody/>');
+    var tbody = $('<tbody class="clusterize-content"/>');
     progHeadersTable.append(tbody);
 
+    var rows = [];
     for (phi in elf.header.programHeaders) {
       var ph = elf.header.programHeaders[phi];
       var phlstr = '<tr>' +
@@ -120,12 +119,16 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
       '<td>' + ph.filesz + '</td>' +
       '<td>' + ph.memsz + '</td>' +
       '</tr>';
-      var tr = $(phlstr);
-      tbody.append(tr);
+      rows.push(phlstr);
     }
+    var clusterize = new Clusterize({
+      scrollElem: tableWrapper.get(0),
+      contentElem: tbody.get(0),
+      rows: rows
+    });
 
     expansionDiv.append('<H5>Section Headers</H5>');
-    var tableWrapper = $('<div class="scrollableWrapper"/>');
+    var tableWrapper = $('<div class="clusterize-scroll"/>');
     expansionDiv.append(tableWrapper);
 
     //fill in expansionDiv with section and program headers
@@ -142,9 +145,10 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
     '<th>Size</th>' +
     +'</tr></thead>');
 
-    var tbody = $('<tbody/>');
+    var tbody = $('<tbody class="clusterize-content"/>');
     sectionHeadersTable.append(tbody);
 
+    var rows = [];
     for (shi in elf.header.sectionHeaders) {
       var sh = elf.header.sectionHeaders[shi];
       var shlstr = '<tr>' +
@@ -157,26 +161,22 @@ function analyzeElf(dataArray, elfElem, canvasElem) {
         '<td>' + sh.offset + '</td>' +
         '<td>' + sh.size + '</td>' +
         '</tr>';
-      var tr = $(shlstr);
-      tbody.append(tr);
+      rows.push(shlstr);
     }
+    var clusterize = new Clusterize({
+      scrollElem: tableWrapper.get(0),
+      contentElem: tbody.get(0),
+      rows: rows
+    });
+
 
     return elf;
 }
 
-function findRopThroughWorker(elf, ropElem) {
-  try {
+function findRopThroughWorker(elf, ropElem, reporter) {
     if (typeof(Worker) !== "undefined") {
 
-      var expando = $('<a href="#">Show/Hide Rop Analysis Progress</a><br/>')
-      var ropStatus = $('<span style="display: block"/>');
-      ropElem.append(expando)
-      ropElem.append(ropStatus);
-      expando.click(function() {
-        ropStatus.toggle();
-      });
-
-      ropStatus.append("Converting ELF program segments " +
+      reporter.updateStatus("Converting ELF program segments " +
         "into struct for ROP finder to work in a Worker process..<br/>");
 
       var segments = []
@@ -193,59 +193,77 @@ function findRopThroughWorker(elf, ropElem) {
         }
       }
 
-      var worker = new Worker("gadget.js");
+      var worker = new Worker("internaljs/gadget.js");
       worker.postMessage(segments);
       worker.onmessage = function(e) {
-        ropStatus.append(e.data.status);
-        ropStatus.append("<br/>");
-
+        reporter.updateStatus(e.data.status);
         if (e.data.gadgets) {
           var gadgets = e.data.gadgets;
-          ropStatus.append("Rendering Table...");
-          ropStatus.append("<br/>");
-          renderGadgetsTable(gadgets, ropElem)
-          ropStatus.toggle();
+          worker.terminate();
+          reporter.updateStatus("Rendering Table...");
+          setTimeout(function() {
+            renderGadgetsTableInWorker(gadgets, ropElem, reporter);
+          }, 20);
         }
       }
     } else {
         throw "No Worker support in this browser. ROP analysis is an expensive" +
         " operation, and should not be performed inline with your event loop.";
     }
-  } catch (e) {
-    analysisElem = 'Error when Analysing data: ' + e + '. '
-    'This tool only processes 64-bit Linux <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> binaries.';
-    throw e;
-  }
 }
 
-function renderGadgetsTable(gadgets, ropElem) {
+function renderGadgetsTableInWorker(gadgets, ropElem, reporter) {
   var expando = $('<a href="#">Show/Hide Rop Gadget Table</a><br/>')
-  var ropTableWrapper = $('<div class="scrollableWrapper">');
+  var ropTableWrapper = $('<div class="clusterize-scroll">');
   var ropTable = $('<table style="display: block"/ class="ropTable">');
   ropTableWrapper.append(ropTable);
-  ropElem.append(expando)
+
+  ropElem.append(expando);
   ropElem.append(ropTableWrapper);
   expando.click(function() {
     ropTableWrapper.toggle();
   });
 
-  ropTable.append('<thead><tr>' +
-  '<th>VAddr</th>' +
-  '<th>Gadget</th>' +
-  + '</tr></thead>');
-
-  tBody = $("<tbody>");
-
-  for (var gi in gadgets) {
-    var tr =$('<tr>'+
-    '<td>' + gadget.vaddr + '</td>' +
-    '<td>' + gadget.gadget + '</td>' +
-    +'</tr>')
-
-    tBody.append(tr);
+  if (typeof(tableIdx) == "undefined") {
+    tableIdx = 1;
+  } else {
+    tableIdx++;
   }
 
+  name = "table" + tableIdx;
+  ropTable.data("name", name);
+  ropTable.attr("id", name);
+  ropTable.append('<thead><tr><th>VAddr</th><th>Gadget</th></tr></thead>');
+
+  var tBody = $('<tbody class="clusterize-content">');
   ropTable.append(tBody);
+
+  var worker = new Worker("internaljs/render_gadget_table.js");
+  var rows = [];
+
+  // Draw the table out of the main loop
+  function drawTable() {
+    var clusterize = new Clusterize({
+      scrollElem: ropTableWrapper.get(0),
+      contentElem: tBody.get(0),
+      rows: rows
+    });
+    reporter.updateStatus("Table Rendering Complete.")
+    reporter.completedAnalysis();
+  }
+
+
+  worker.postMessage(gadgets);
+  worker.onmessage = function(e) {
+      if (!e.data) {
+        worker.terminate();
+        reporter.completedRop();
+        setTimeout(drawTable, 20); //Call this async
+      } else {
+        reporter.updateStatus(e.data.status);
+        rows = rows.concat(e.data.rows);
+      }
+  }
 }
 
 

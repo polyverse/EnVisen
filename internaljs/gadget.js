@@ -1,10 +1,11 @@
 
-self.importScripts("capstone.min.js");
+self.importScripts("../externaljs/capstone.min.js");
 
 //Main Webworker handler
  onmessage = function (e) {
    gadgets = getAllGadgets(e.data);
    postMessage({status: "Found gadgets", gadgets: gadgets});
+   close();
  }
 
 function  getAllGadgets(segments) {
@@ -16,7 +17,7 @@ function  getAllGadgets(segments) {
     var segment = segments[si];
     var localgadgets = getAllGadgetsInSection(segment);
     postMessage({status: "Found " +localgadgets.length+ " gadgets in segment"});
-    appendAll(gadgets, localgadgets);
+    gadgets = gadgets.concat(localgadgets);
   }
 
   //# Pass clean single instruction and unknown instructions
@@ -40,14 +41,14 @@ function getAllGadgetsInSection(section) {
  var gadgets = [];
 
  var ropGadgets = addROPGadgets(section);
- appendAll(gadgets, ropGadgets);
+ gadgets = gadgets.concat(ropGadgets);
  postMessage({status: "Found " + ropGadgets.length + " ROP gadgets."});
  var jopGadgets = addJOPGadgets(section);
  postMessage({status: "Found " + jopGadgets.length + " JOP gadgets."});
- appendAll(gadgets, jopGadgets);
+ gadgets = gadgets.concat(jopGadgets);
  var sysGadgets = addSYSGadgets(section);
  postMessage({status: "Found " + sysGadgets.length + " SYS gadgets."});
- appendAll(gadgets, sysGadgets);
+ gadgts = gadgets.concat(sysGadgets);
  return gadgets;
 }
 
@@ -220,12 +221,6 @@ function inArray(arr, elem) {
     }
   }
   return false
-}
-
-function appendAll(array1, array2) {
-  for (var i in array2) {
-    array1.push(array2[i]);
-  }
 }
 
 function toMatcher(str) {
