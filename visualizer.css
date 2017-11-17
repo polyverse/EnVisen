@@ -27,3 +27,23 @@
     height: 300px;
     overflow: auto;
 }
+
+.footer {
+  font-size: 50%;
+  display: block;
+}
+
+
+.left {
+   width: 49%;
+   border: 1px solid;
+   display: inline-block;
+   vertical-align: top;
+}
+
+.right {
+   width: 49%;
+   border: 1px solid;
+   display: inline-block;
+   vertical-align: top;
+}

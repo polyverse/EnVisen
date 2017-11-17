@@ -198,7 +198,7 @@ function findRopThroughWorker(elf, ropElem) {
           var gadgets = e.data.gadgets;
           ropStatus.append("Rendering Table...");
           ropStatus.append("<br/>");
-          renderGadgets(gadgets, ropElem)
+          renderGadgetsTable(gadgets, ropElem)
           ropStatus.toggle();
         }
       }
@@ -213,7 +213,7 @@ function findRopThroughWorker(elf, ropElem) {
   }
 }
 
-function renderGadgets(gadgets, ropElem) {
+function renderGadgetsTable(gadgets, ropElem) {
 
   var expando = $('<a href="#">Show/Hide Rop Gadget Table</a><br/>')
   var ropTableWrapper = $('<div class="scrollableWrapper">');
