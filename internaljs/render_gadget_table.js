@@ -1,10 +1,21 @@
-function renderGadgetsTable(gadgets) {
+function renderGadgetsTable(gadgets, gadgetshash) {
   var group=1000;
   var rows = [];
+  var newGadgetsHash = {};
+  console.log(gadgetshash)
   for (var gi in gadgets) {
     var gadget = gadgets[gi];
 
-    var tr ='<tr><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
+    //construct new hash
+    newGadgetsHash[gadget.gadget] = gadget.vaddr;
+
+    var className = ""
+    if (gadgetshash[gadget.gadget] == gadget.vaddr) {
+      className = "survived";
+    } else if (gadget.gadget in gadgetshash) {
+      className = "moved";
+    }
+    var tr ='<tr class=' + className + '><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
     rows.push(tr);
 
     if (rows.length == group || gi == gadgets.length-1) {
@@ -12,11 +23,11 @@ function renderGadgetsTable(gadgets) {
       rows = [];
     }
   }
-  postMessage(false);
+  postMessage({finished: true, gadgetshash: newGadgetsHash});
 }
 
 //Main Webworker handler
 onmessage = function (e) {
-   elements = renderGadgetsTable(e.data);
+   elements = renderGadgetsTable(e.data.gadgets, e.data.gadgetshash);
    close();
 }

@@ -50,31 +50,26 @@ function analyzeResultErrorCapture(index, filename, dataArray, analysisElem, rep
   var errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
 
-    var elfElem = $("<div/>");
-    $(analysisElem).append(elfElem)
+  var elfElem = $("<div/>");
+  $(analysisElem).append(elfElem)
 
-    var ropElem=$("<div/>")
-    $(analysisElem).append(ropElem);
+  var ropElem=$("<div/>")
+  $(analysisElem).append(ropElem);
 
-    if (filename.endsWith(".json")) {
-      //try {
-        reporter.updateStatus("Filename ends with .json. Testing whether data is JSON...");
-        var decoder = new TextDecoder('utf8');
-        var gadgets = JSON.parse(decoder.decode(dataArray));
-        reporter.updateStatus("That worked. Rendering Table from gadgets found in json...");
-        setTimeout(function() {
-          renderGadgetsTableInWorker(gadgets, filename, ropElem, reporter);
-        }, 20);
-        return;
-      //} catch (e) {
-        console.log(e);
-        reporter.updateStatus("Data is not JSON. Interpreting as ELF...");
-      //}
-    }
-
+  if (filename.endsWith(".json")) {
+      reporter.updateStatus("Filename ends with .json. Testing whether data is JSON...");
+      var decoder = new TextDecoder('utf8');
+      var gadgets = JSON.parse(decoder.decode(dataArray));
+      reporter.updateStatus("That worked. Rendering Table from gadgets found in json...");
+      setTimeout(function() {
+        renderGadgetsTableInWorker(gadgets, filename, ropElem, reporter);
+      }, 20);
+      return;
+  } else {
     var elf = analyzeElf(dataArray, elfElem, reporter)
     reporter.completedElf();
     findRopThroughWorker(elf, filename, ropElem, reporter)
+  }
 }
 
 function analyzeElf(dataArray, elfElem, reporter) {
@@ -228,14 +223,10 @@ function findRopThroughWorker(elf, filename, ropElem, reporter) {
 }
 
 function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
-  var expando = $('<a href="#">Show/Hide Rop Gadget Table</a>')
+  var expando = $('<a href="#">Show/Hide ROP Table</a>')
   ropElem.append(expando);
 
   var save = $('<a href="#" class="save">(Save as JSON)</a><br/>')
-  save.click(function() {
-      saveAs(new Blob([JSON.stringify(gadgets, null, 2)], {type: "application/json"})
-    		, jsonFileName);
-  })
   ropElem.append(save);
 
   var ropTableWrapper = $('<div class="clusterize-scroll">');
@@ -243,6 +234,7 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
   ropTableWrapper.append(ropTable);
 
   ropElem.append(ropTableWrapper);
+
   expando.click(function() {
     ropTableWrapper.toggle();
   });
@@ -255,8 +247,14 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
 
   name = "table" + tableIdx;
   ropTable.data("name", name);
+  ropTable.data("gadgets", JSON.stringify(gadgets, null, 2));
   ropTable.attr("id", name);
   ropTable.append('<thead><tr><th>VAddr</th><th>Gadget</th></tr></thead>');
+
+  save.click(function() {
+      saveAs(new Blob([ropTable.data("gadgets")], {type: "application/json"})
+    		, jsonFileName);
+  })
 
   var tBody = $('<tbody class="clusterize-content">');
   ropTable.append(tBody);
@@ -276,11 +274,20 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
   }
 
 
-  worker.postMessage(gadgets);
+  if (typeof(gadgetshash) == "undefined") {
+    gadgetshash = {};
+  }
+
+  worker.postMessage({
+    gadgets: gadgets,
+    gadgetshash: gadgetshash
+  });
+
   worker.onmessage = function(e) {
-      if (!e.data) {
+      if (e.data.finished) {
         worker.terminate();
         reporter.completedRop();
+        gadgetshash = e.data.gadgetshash;
         setTimeout(drawTable, 20); //Call this async
       } else {
         reporter.updateStatus(e.data.status);

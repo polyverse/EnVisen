@@ -48,7 +48,15 @@
 }
 
 tr:nth-of-type(even) {
-    background: #F9F9F9;
+  background-color: #F9F9F9;
+}
+
+tr.survived:nth-of-type(even) {
+    background-color: red;
+}
+
+.survived {
+  background-color: red;
 }
 
 .save {
