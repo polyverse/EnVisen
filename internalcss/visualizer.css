@@ -74,7 +74,7 @@ tr.survived:nth-of-type(even) {
   border: 1px solid;
 }
 
-.comparator-layout thead td {
+.comparator-layout thead td, #execution thead td {
     text-align: center;
     font-weight: bold;
 }
@@ -85,4 +85,16 @@ tr.survived:nth-of-type(even) {
 
 .ropTable td {
   white-space: nowrap;
+}
+
+#execution table {
+  width: 100%;
+}
+
+#execution td.intact {
+  background-color: red;
+}
+
+#execution td.broken {
+  background-color: green;
 }

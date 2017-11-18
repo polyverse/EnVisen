@@ -42,12 +42,11 @@
     </thead>
     <tbody>
     <tr>
-      <td rowspan="3">
+      <td rowspan="2">
         <span>Please enter a series of return addresses, to simulate jumping
           to them by infecting the stack.</span><br/>
         <input type="text" value="" id="rop-chain-content" style="width:99%;"></input>
         <input type="button" id="generate-rand-chain-btn" value="Generate Random chain"></button>
-        <input type="button" id="generate-surv-chain-btn" value="Generate surviving chain"></button>
         <input type="button" id="exec-chain-btn" value="Execute Chain..."></button>
       </td>
       <td>
@@ -69,24 +68,12 @@
         </div>
       </td>
     </tr>
-
-
-    <tr>
-      <td>
-        <div id="surviving-gadgets">
-          <span>Surviving Gadgets Table</span><br/>
-          <div class="clusterize-scroll" id="surviving-table-wrapper">
-            <table class="ropTable" id="surviving-gadgets-table">
-              <thead><tr><th>VAddr</th><th>Gadget</th></tr></thead>
-              <tbody class="clusterize-content" id="surviving-tbody"/>
-            </table>
-          </div>
-        </div>
-      </td>
-    </tr>
-
     <tbody>
   </table>
+
+  <div id="execution">
+  </div>
+
   </div>
   <br/>
     <div class="footer">Developed, sponsored and maintained
