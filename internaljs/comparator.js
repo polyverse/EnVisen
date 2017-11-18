@@ -107,7 +107,6 @@ function scrollTablesToGadget(gadget) {
     var index = findGadgetIndexForGadget(gadgets, gadget);
     if (index >= 0) {
           scrollTableToSelectedRow(jqt, index);
-          break;
     }
   });
 }
