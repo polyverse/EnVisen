@@ -68,7 +68,7 @@ function analyzeResultErrorCapture(index, filename, dataArray, analysisElem, rep
       }, 20);
       return;
   } else {
-    var elf = analyzeElf(dataArray, elfElem, reporter)
+    elf = analyzeElf(dataArray, elfElem, reporter)
     reporter.completedElf();
     findRopThroughWorker(elf, filename, ropElem, reporter)
   }
