@@ -25,11 +25,11 @@ function  getAllGadgets(segments) {
   gadgets = passCleanX86(gadgets)
 
   //# Delete duplicate gadgets
-  postMessage({status: "Deleting duplicate gadgets from " + gadgets.length + " total gadgets." });
-  gadgets = deleteDuplicateGadgets(gadgets)
+  //postMessage({status: "Deleting duplicate gadgets from " + gadgets.length + " total gadgets." });
+  //gadgets = deleteDuplicateGadgets(gadgets)
 
   //# Sorted alphabetically
-  postMessage({status: "Sorting " +gadgets.length+ " gadgets alphabetically"});
+  postMessage({status: "Sorting " +gadgets.length+ " gadgets alphabetically (and address)"});
   gadgets = sortgadgets(gadgets)
 
   // Strip fields no longer needed
@@ -259,7 +259,13 @@ function deleteDuplicateGadgets(currentGadgets) {
 
 function sortgadgets(currentGadgets) {
     return currentGadgets.sort(function(a, b){
-      return a.vaddr - b.vaddr;
+      if (a.gadget < b.gadget) return -1;
+      if (a.gadget > b.gadget) return 1;
+
+      if (a.vaddr < b.vaddr) return -1;
+      if (a.vaddr > b.vadr) return 1;
+
+      return 0;
     });
 }
 

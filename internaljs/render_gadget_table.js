@@ -5,14 +5,21 @@ function renderGadgetsTable(gadgets, gadgetshash) {
   for (var gi in gadgets) {
     var gadget = gadgets[gi];
 
-    //construct new hash
-    newGadgetsHash[gadget.gadget] = gadget.vaddr;
+    if (gadget.gadget in newGadgetsHash) {
+      //push another address
+      newGadgetsHash[gadget.gadget].push(gadget.vaddr);
+    } else {
+      //construct new hash
+      newGadgetsHash[gadget.gadget] = [gadget.vaddr];
+    }
 
     var className = ""
-    if (gadgetshash[gadget.gadget] == gadget.vaddr) {
+    if (isInArray(gadgetshash[gadget.gadget], gadget.vaddr)) {
       className = "survived";
     } else if (gadget.gadget in gadgetshash) {
       className = "moved";
+    } else {
+      className = "died"
     }
     var tr ='<tr class="' + className + '"><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
     rows.push(tr);
@@ -23,6 +30,15 @@ function renderGadgetsTable(gadgets, gadgetshash) {
     }
   }
   postMessage({finished: true, gadgetshash: newGadgetsHash});
+}
+
+function isInArray(arr, elem) {
+  for (var i in arr) {
+    if (arr[i] == elem) {
+      return true;
+    }
+  }
+  return false;
 }
 
 //Main Webworker handler
