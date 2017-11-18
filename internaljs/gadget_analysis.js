@@ -225,10 +225,13 @@ function findRopThroughWorker(elf, filename, ropElem, reporter) {
 }
 
 function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
-  var expando = $('<a href="#">Show/Hide ROP Table</a>')
+  var expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);
 
-  var save = $('<a href="#" class="save">(Save as JSON)</a><br/>')
+  ropElem.append('<span class="save">Show:</span><br/>');
+  var select = $('<input type="select" class="save"></input>')
+
+  var save = $('<a href="#" class="save">(Save as JSON)</a><br/>');
   ropElem.append(save);
 
   var ropTableWrapper = $('<div class="clusterize-scroll">');
