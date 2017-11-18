@@ -33,7 +33,60 @@
   </div>
   <br/>
   <div class="comparator">
+    <table class="comparator-layout">
+    <thead>
+      <tr>
+        <td>ROP Chain Execution Simulator</td>
+        <td></td>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td rowspan="3">
+        <span>Please enter a series of return addresses, to simulate jumping
+          to them by infecting the stack.</span><br/>
+        <input type="text" value="" id="rop-chain-content" style="width:99%;"></input>
+        <input type="button" id="generate-rand-chain-btn" value="Generate Random chain"></button>
+        <input type="button" id="generate-surv-chain-btn" value="Generate surviving chain"></button>
+        <input type="button" id="exec-chain-btn" value="Execute Chain..."></button>
+      </td>
+      <td>
+        <div id="find-gadget">
+          <span>Find Gadget</span><br/>
+          <input type="text" id="gadget-find-content" value="ret;"></input>
+          <input type="button" id="gadget-find-btn" value="Find Gadget"></button>
+        </div>
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+        <div id="find-addr">
+          <span>Find Address</span><br/>
+          <input type="text" id="address-find-content" value="0"></input>
+          <input type="button" id="address-find-btn" value="Find Address"></button>
+          </div>
+        </div>
+      </td>
+    </tr>
+
+
+    <tr>
+      <td>
+        <div id="surviving-gadgets">
+          <span>Surviving Gadgets Table</span><br/>
+          <div class="clusterize-scroll" id="surviving-table-wrapper">
+            <table class="ropTable" id="surviving-gadgets-table">
+              <thead><tr><th>VAddr</th><th>Gadget</th></tr></thead>
+              <tbody class="clusterize-content" id="surviving-tbody"/>
+            </table>
+          </div>
+        </div>
+      </td>
+    </tr>
+
+    <tbody>
+  </table>
   </div>
   <br/>
     <div class="footer">Developed, sponsored and maintained
