@@ -64,3 +64,21 @@ tr.survived:nth-of-type(even) {
   float: right;
   font-size: 50%;
 }
+
+.comparator {
+  width: 100%;
+}
+
+.comparator-layout {
+  width: 100%;
+  border: 1px solid;
+}
+
+.comparator-layout thead td {
+    text-align: center;
+    font-weight: bold;
+}
+
+.comparator-layout tbody td {
+  border: 1px dotted;
+}
