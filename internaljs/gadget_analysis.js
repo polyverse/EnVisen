@@ -46,6 +46,8 @@ ElfPhFlags = Object.freeze({
   0xf0000000: "PF_MASKPROC"
 });
 
+var tablesToGadgets = {};
+
 function analyzeResultErrorCapture(index, filename, dataArray, analysisElem, reporter) {
   var errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
@@ -247,12 +249,11 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
 
   name = "table" + tableIdx;
   ropTable.data("name", name);
-  ropTable.data("gadgets", JSON.stringify(gadgets, null, 2));
   ropTable.attr("id", name);
   ropTable.append('<thead><tr><th>VAddr</th><th>Gadget</th></tr></thead>');
 
   save.click(function() {
-      saveAs(new Blob([ropTable.data("gadgets")], {type: "application/json"})
+      saveAs(new Blob([JSON.stringify(gadgets, null, 2)], {type: "application/json"})
     		, jsonFileName);
   })
 
@@ -269,6 +270,7 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
       contentElem: tBody.get(0),
       rows: rows
     });
+    tablesToGadgets[name] = gadgets;
     reporter.updateStatus("Table Rendering Complete.")
     reporter.completedAnalysis();
   }

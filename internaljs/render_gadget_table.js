@@ -14,7 +14,7 @@ function renderGadgetsTable(gadgets, gadgetshash) {
     } else if (gadget.gadget in gadgetshash) {
       className = "moved";
     }
-    var tr ='<tr class=' + className + '><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
+    var tr ='<tr class="' + className + '"><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
     rows.push(tr);
 
     if (rows.length == group || gi == gadgets.length-1) {

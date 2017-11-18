@@ -30,10 +30,12 @@ function  getAllGadgets(segments) {
 
   //# Sorted alphabetically
   postMessage({status: "Sorting " +gadgets.length+ " gadgets alphabetically"});
-  gadgets = alphaSortgadgets(gadgets)
+  gadgets = sortgadgets(gadgets)
 
+  // Strip fields no longer needed
   postMessage({status: "Stripping " +gadgets.length+ " gadgets for rendering"});
   gadgets = stripGadgets(gadgets);
+
 
   return gadgets;
 }
@@ -244,19 +246,21 @@ function deleteDuplicateGadgets(currentGadgets) {
     var unique_gadgets = [];
 
     for (gi in currentGadgets) {
-        var gadget = currentGadgets[gi];
-        var gad = gadget["gadget"]
-        if (gadgets_content_set.has(gad)) {
-            continue
-        }
-        gadgets_content_set.add(gad)
-        unique_gadgets.push(gadget);
+      var gadget = currentGadgets[gi];
+      var gad = gadget["gadget"]
+      if (gadgets_content_set.has(gad)) {
+        continue
+      }
+      gadgets_content_set.add(gad)
+      unique_gadgets.push(gadget);
     }
     return unique_gadgets
 }
 
-function alphaSortgadgets(currentGadgets) {
-    return currentGadgets;
+function sortgadgets(currentGadgets) {
+    return currentGadgets.sort(function(a, b){
+      return a.vaddr - b.vaddr;
+    });
 }
 
 function stripGadgets(gadgets) {

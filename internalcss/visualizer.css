@@ -82,3 +82,7 @@ tr.survived:nth-of-type(even) {
 .comparator-layout tbody td {
   border: 1px dotted;
 }
+
+.ropTable td {
+  white-space: nowrap;
+}

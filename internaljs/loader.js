@@ -147,9 +147,8 @@ function getFileProcessor(index) {
           var nextCollector = $("#file-collector" + nindex);
           if (nextCollector.length > 0) {
             nextCollector.unblock();
-          } else {
-            setTimeout(launchComparator, 10);
           }
+          setTimeout(launchComparator, 10);
         }
 
         progressBarElem.click(function() {
