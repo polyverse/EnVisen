@@ -63,7 +63,7 @@ function executeChain(chain) {
   for (var i in addrs) {
     var addr = addrs[i];
     if (addr == "") continue;
-    
+
     var tr = $("<tr/>");
     tr.append("<td>" + addr + "</td>");
 
@@ -117,7 +117,7 @@ function scrollTablesToAddress(addr) {
     var jqt = $(table);
     var name = $(table).attr("id");
     var gadgets = tablesToGadgets[name];
-    var index = findGadgetIndexForVaddr(gadgets, vaddr);
+    var index = findGadgetIndexForVaddr(gadgets, addr);
     if (index >= 0) {
       scrollTableToSelectedRow(jqt, index);
     }
