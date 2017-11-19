@@ -233,22 +233,27 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
 
   var gadgetsWrapper = $('<div>');
 
-  var select = $('<select class="gadget-filter"></select>');
-  var optionAll = $("<option>All Gadgets</option>");
-  select.append(optionAll);
-  gadgetsWrapper.append('<span class="gadget-filter">Show:</span>');
-  gadgetsWrapper.append(select);
+  var filter = $('<select class="gadget-filter"></select>');
+  filter.append("<option>All Gadgets</option>");
+  gadgetsWrapper.append('<span class="gadget-filter">Filter:</span>');
+  gadgetsWrapper.append(filter);
 
-  var optionSurvived;
-  var optionMoved;
   if (typeof(gadgetshash) == "undefined") {
     gadgetshash = {};
   } else {
-    optionSurvived = $('<option disabled="disabled">Surviving Gadgets</option>');
-    select.append(optionSurvived);
-    optionMoved = $('<option disabled="disabled">Moved Gadgets</option>');
-    select.append(optionMoved);
+    filter.append('<option disabled="disabled">Surviving Gadgets</option>');
+    filter.append('<option disabled="disabled">Moved Gadgets</option>');
   }
+
+  var sort = $('<select class="gadget-sort"></select>');
+  var optionAlpha = $
+  sort.append("<option>Alphabetically</option>");
+  sort.append("<option>Topographically</option>");
+  gadgetsWrapper.append('<span class="gadget-filter">Sort:</span>');
+  gadgetsWrapper.append(sort);
+
+  var displayStatusSpan = $("<span></span>");
+  gadgetsWrapper.append(displayStatusSpan);
 
   var ropTableWrapper = $('<div class="clusterize-scroll">');
   var ropTable = $('<table style="display: block" class="ropTable">');
@@ -291,29 +296,75 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
     });
 
     function displayRows() {
+      var displayStatus = "Displaying ";
+
       var dr = allRows;
-      switch (select.val()) {
+      switch (filter.val()) {
         case "Surviving Gadgets":
+          displayStatus += "surviving gadgets ";
+          reporter.updateStatus("Filtering surviving gadgets...");
           dr = allRows.filter(function(row) {return row.includes("survived");});
         break;
         case "Moved Gadgets":
+          displayStatus += "surviving gadgets ";
+          reporter.updateStatus("Filtering moved gadgets...");
           dr = allRows.filter(function(row) {return row.includes("moved");});
+        break;
+        default:
+          displayStatus += "all gadgets ";
         break;
       }
 
+      var vaddrRegExp = new RegExp('data-vaddr="(.+)"', 'i');
+      var gadgetRegExp = new RegExp('data-gadget="(.+)"', 'i');
+
+      function vaddrComparator(a, b) {
+        var vaddra = vaddrRegExp.exec(a)[1];
+        var vaddrb = vaddrRegExp.exec(b)[1];
+        return parseInt(vaddra, 16) - parseInt(vaddrb, 16);
+      }
+
+      function alphaComparator(a, b) {
+        var gadgeta = gadgetRegExp.exec(a)[1];
+        var gadgetb = gadgetRegExp.exec(b)[1];
+        if (gadgeta < gadgetb) return -1;
+        if (gadgeta > gadgetb) return 1;
+
+        return vaddrComparator(a, b);
+      }
+
+      switch (sort.val()) {
+        case "Alphabetically":
+          displayStatus += "sorted alphabetically: ";
+          reporter.updateStatus("Sorting gadgets alphabetically...");
+          dr = dr.sort(alphaComparator);
+        break;
+        case "Topographically":
+          displayStatus += "sorted topographically: ";
+          reporter.updateStatus("Sorting gadgets topographically...");
+          dr = dr.sort(vaddrComparator);
+        break;
+      }
+      displayStatus += dr.length;
+
       clusterize.update(dr);
+      displayStatusSpan.text(displayStatus);
+      reporter.updateStatus("Updated gadgets table!");
     }
 
     displayRows();
 
     tablesToGadgets[name] = gadgets;
-    if (typeof(optionSurvived) !== "undefined") {
-      optionSurvived.removeAttr("disabled");
-      optionMoved.removeAttr("disabled");
-      select.change(function(evt) {
-        displayRows();
-      });
-    }
+
+    sort.change(function(evt) {
+      displayRows();
+    });
+
+    filter.change(function(evt) {
+      displayRows();
+    });
+
+    filter.find('[disabled="disabled"]').removeAttr("disabled");
     reporter.updateStatus("Table Rendering Complete.")
     reporter.completedAnalysis();
   }
@@ -336,7 +387,6 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
   }
 }
 
-
 function interpretFlags(flags, consts) {
   var fstr = '';
   var first = true;
@@ -358,19 +408,4 @@ function interpretFlags(flags, consts) {
     fstr = '(' + fstr + ')';
   }
   return fstr
-}
-
-function sortAddr(currentGadgets) {
-    return currentGadgets.sort(function(a, b){
-      return a.vaddr - b.vaddr;
-    });
-}
-
-
-function sortAlpha(currentGadgets) {
-    return currentGadgets.sort(function(a, b){
-      if (a.gadget < b.gadget) return -1;
-      if (a.gadget > b.gadget) return 1;
-      return a.vaddr - b.vaddr;
-    });
 }

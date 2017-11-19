@@ -22,7 +22,11 @@ function renderGadgetsTable(gadgets, gadgetshash) {
     } else {
       className = "died"
     }
-    var tr ='<tr class="' + className + '"><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
+    var tr ='<tr class="' + className + '" ' +
+    'data-gadget="' + gadget.gadget + '" ' +
+    'data-vaddr="' + gadget.vaddr + '" ' +
+    '><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
+    
     rows.push(tr);
 
     if (rows.length == group || gi == gadgets.length-1) {
