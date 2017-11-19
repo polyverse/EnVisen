@@ -228,20 +228,37 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
   var expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);
 
-  ropElem.append('<span class="save">Show:</span><br/>');
-  var select = $('<input type="select" class="save"></input>')
-
   var save = $('<a href="#" class="save">(Save as JSON)</a><br/>');
   ropElem.append(save);
 
-  var ropTableWrapper = $('<div class="clusterize-scroll">');
-  var ropTable = $('<table style="display: block"/ class="ropTable">');
-  ropTableWrapper.append(ropTable);
+  var gadgetsWrapper = $('<div>');
 
-  ropElem.append(ropTableWrapper);
+  var select = $('<select class="gadget-filter"></select>');
+  var optionAll = $("<option>All Gadgets</option>");
+  select.append(optionAll);
+  gadgetsWrapper.append('<span class="gadget-filter">Show:</span>');
+  gadgetsWrapper.append(select);
+
+  var optionSurvived;
+  var optionMoved;
+  if (typeof(gadgetshash) == "undefined") {
+    gadgetshash = {};
+  } else {
+    optionSurvived = $('<option disabled="disabled">Surviving Gadgets</option>');
+    select.append(optionSurvived);
+    optionMoved = $('<option disabled="disabled">Moved Gadgets</option>');
+    select.append(optionMoved);
+  }
+
+  var ropTableWrapper = $('<div class="clusterize-scroll">');
+  var ropTable = $('<table style="display: block" class="ropTable">');
+  ropTableWrapper.append(ropTable);
+  gadgetsWrapper.append(ropTableWrapper);
+
+  ropElem.append(gadgetsWrapper);
 
   expando.click(function() {
-    ropTableWrapper.toggle();
+    gadgetsWrapper.toggle();
   });
 
   if (typeof(tableIdx) == "undefined") {
@@ -264,23 +281,41 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
   ropTable.append(tBody);
 
   var worker = new Worker("internaljs/render_gadget_table.js");
-  var rows = [];
+  var allRows = [];
 
   // Draw the table out of the main loop
   function drawTable() {
     var clusterize = new Clusterize({
       scrollElem: ropTableWrapper.get(0),
       contentElem: tBody.get(0),
-      rows: rows
     });
+
+    function displayRows() {
+      var dr = allRows;
+      switch (select.val()) {
+        case "Surviving Gadgets":
+          dr = allRows.filter(function(row) {return row.includes("survived");});
+        break;
+        case "Moved Gadgets":
+          dr = allRows.filter(function(row) {return row.includes("moved");});
+        break;
+      }
+
+      clusterize.update(dr);
+    }
+
+    displayRows();
+
     tablesToGadgets[name] = gadgets;
+    if (typeof(optionSurvived) !== "undefined") {
+      optionSurvived.removeAttr("disabled");
+      optionMoved.removeAttr("disabled");
+      select.change(function(evt) {
+        displayRows();
+      });
+    }
     reporter.updateStatus("Table Rendering Complete.")
     reporter.completedAnalysis();
-  }
-
-
-  if (typeof(gadgetshash) == "undefined") {
-    gadgetshash = {};
   }
 
   worker.postMessage({
@@ -296,7 +331,7 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
         setTimeout(drawTable, 20); //Call this async
       } else {
         reporter.updateStatus(e.data.status);
-        rows = rows.concat(e.data.rows);
+        allRows = allRows.concat(e.data.rows);
       }
   }
 }
@@ -323,4 +358,19 @@ function interpretFlags(flags, consts) {
     fstr = '(' + fstr + ')';
   }
   return fstr
+}
+
+function sortAddr(currentGadgets) {
+    return currentGadgets.sort(function(a, b){
+      return a.vaddr - b.vaddr;
+    });
+}
+
+
+function sortAlpha(currentGadgets) {
+    return currentGadgets.sort(function(a, b){
+      if (a.gadget < b.gadget) return -1;
+      if (a.gadget > b.gadget) return 1;
+      return a.vaddr - b.vaddr;
+    });
 }

@@ -14,7 +14,8 @@ function renderGadgetsTable(gadgets, gadgetshash) {
     }
 
     var className = ""
-    if (isInArray(gadgetshash[gadget.gadget], gadget.vaddr)) {
+    if (typeof(gadgetshash[gadget.gadget]) !== "undefined" &&
+        gadgetshash[gadget.gadget].includes(gadget.vaddr)) {
       className = "survived";
     } else if (gadget.gadget in gadgetshash) {
       className = "moved";
@@ -30,15 +31,6 @@ function renderGadgetsTable(gadgets, gadgetshash) {
     }
   }
   postMessage({finished: true, gadgetshash: newGadgetsHash});
-}
-
-function isInArray(arr, elem) {
-  for (var i in arr) {
-    if (arr[i] == elem) {
-      return true;
-    }
-  }
-  return false;
 }
 
 //Main Webworker handler

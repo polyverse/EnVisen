@@ -28,10 +28,6 @@ function  getAllGadgets(segments) {
   //postMessage({status: "Deleting duplicate gadgets from " + gadgets.length + " total gadgets." });
   //gadgets = deleteDuplicateGadgets(gadgets)
 
-  //# Sorted alphabetically
-  postMessage({status: "Sorting " +gadgets.length+ " gadgets alphabetically (and address)"});
-  gadgets = sortgadgets(gadgets)
-
   // Strip fields no longer needed
   postMessage({status: "Stripping " +gadgets.length+ " gadgets for rendering"});
   gadgets = stripGadgets(gadgets);
@@ -108,9 +104,9 @@ function passCleanX86(gadgets, multibr) {
          var gadget = gadgets[gi];
          var gadgetstr = gadget["gadget"];
          var insts = gadgetstr.split(" ; ");
-         if (insts.length == 1 && !inArray(br, insts[0].split(" ")[0])) {
+         if (insts.length == 1 && !br.includes(insts[0].split(" ")[0])) {
              continue
-         } if (!inArray(br, insts[insts.length-1].split(" ")[0])) {
+         } if (!br.includes(insts[insts.length-1].split(" ")[0])) {
              continue
          } if (checkInstructionBlackListedX86(insts)) {
              continue
@@ -188,7 +184,6 @@ function checkInstructionBlackListedX86(insts) {
     var bl = ["db", "int3"];
     for (insti in insts) {
       var inst = insts[insti];
-
         for (bi in bl) {
           var b = bl[bi];
             if (inst.split(" ")[0] == b) {
@@ -203,7 +198,7 @@ function checkMultiBr(insts, br) {
     var count = 0
     for (insti in insts) {
         var inst = insts[insti];
-        if (inArray(br, inst.split()[0])) {
+        if (br.includes(inst.split()[0])) {
             count += 1
         }
     }
@@ -216,16 +211,6 @@ function matchPositions(re, str) {
     mps.push(match.index);
   }
   return mps;
-}
-
-function inArray(arr, elem) {
-  for (ai in arr) {
-    var ae = arr[ai];
-    if (ae == elem) {
-      return true
-    }
-  }
-  return false
 }
 
 function toMatcher(str) {
@@ -255,18 +240,6 @@ function deleteDuplicateGadgets(currentGadgets) {
       unique_gadgets.push(gadget);
     }
     return unique_gadgets
-}
-
-function sortgadgets(currentGadgets) {
-    return currentGadgets.sort(function(a, b){
-      if (a.gadget < b.gadget) return -1;
-      if (a.gadget > b.gadget) return 1;
-
-      if (a.vaddr < b.vaddr) return -1;
-      if (a.vaddr > b.vadr) return 1;
-
-      return 0;
-    });
 }
 
 function stripGadgets(gadgets) {
