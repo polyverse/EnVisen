@@ -46,7 +46,10 @@ ElfPhFlags = Object.freeze({
   0xf0000000: "PF_MASKPROC"
 });
 
-var tablesToGadgets = {};
+var VaddrRegExp = new RegExp('data-vaddr="([^"]+)"', 'i');
+var GadgetRegExp = new RegExp('data-gadget="([^"]+)"', 'i');
+var TablesToRows = {};
+var TablesToGadgets = {};
 
 function analyzeResultErrorCapture(index, filename, dataArray, analysisElem, reporter) {
   var errorElem = $("<span/>")
@@ -315,18 +318,15 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
         break;
       }
 
-      var vaddrRegExp = new RegExp('data-vaddr="(.+)"', 'i');
-      var gadgetRegExp = new RegExp('data-gadget="(.+)"', 'i');
-
       function vaddrComparator(a, b) {
-        var vaddra = vaddrRegExp.exec(a)[1];
-        var vaddrb = vaddrRegExp.exec(b)[1];
+        var vaddra = VaddrRegExp.exec(a)[1];
+        var vaddrb = VaddrRegExp.exec(b)[1];
         return parseInt(vaddra, 16) - parseInt(vaddrb, 16);
       }
 
       function alphaComparator(a, b) {
-        var gadgeta = gadgetRegExp.exec(a)[1];
-        var gadgetb = gadgetRegExp.exec(b)[1];
+        var gadgeta = GadgetRegExp.exec(a)[1];
+        var gadgetb = GadgetRegExp.exec(b)[1];
         if (gadgeta < gadgetb) return -1;
         if (gadgeta > gadgetb) return 1;
 
@@ -347,14 +347,15 @@ function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
       }
       displayStatus += dr.length;
 
+      TablesToRows[name] = dr;
+
       clusterize.update(dr);
       displayStatusSpan.text(displayStatus);
       reporter.updateStatus("Updated gadgets table!");
     }
 
     displayRows();
-
-    tablesToGadgets[name] = gadgets;
+    TablesToGadgets[name] = gadgets;
 
     sort.change(function(evt) {
       displayRows();

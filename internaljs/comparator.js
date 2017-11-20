@@ -38,12 +38,12 @@ function executeChain(chain) {
   $("#execution").empty();
 
   //How many rop tables are we working with?
-  var ropTableLen = tablesToGadgets.length;
+  var ropTableLen = TablesToGadgets.length;
 
   //Let's set up our UI first
   var th = $("<tr></tr>");
   th.append("<td></td>");
-  for (name in tablesToGadgets) {
+  for (name in TablesToGadgets) {
     th.append("<td>Gadgets from " + name + "</td>");
   }
 
@@ -68,13 +68,13 @@ function executeChain(chain) {
     tr.append("<td>" + addr + "</td>");
 
     //Now go over all tables
-    for (name in tablesToGadgets) {
+    for (name in TablesToGadgets) {
       if (brokenChains[name]){
         tr.append('<td class="broken">Chain broken</td>');
         continue;
       }
 
-      var gadgets = tablesToGadgets[name];
+      var gadgets = TablesToGadgets[name];
       var index = findGadgetIndexForVaddr(gadgets, addr);
       if (index < 0) {
         brokenChains[name] = true;
@@ -103,10 +103,10 @@ function scrollTablesToGadget(gadget) {
   $('.ropTable').each(function(idx, table){
     var jqt = $(table);
     var name = $(table).attr("id");
-    var gadgets = tablesToGadgets[name];
-    var index = findGadgetIndexForGadget(gadgets, gadget);
-    if (index >= 0) {
-          scrollTableToSelectedRow(jqt, index);
+    var rows = TablesToRows[name];
+    var row = findGadgetRowForGadget(rows, gadget);
+    if (row >= 0) {
+          scrollTableToSelectedRow(jqt, row);
     }
   });
 }
@@ -115,10 +115,10 @@ function scrollTablesToAddress(addr) {
   $('.ropTable').each(function(idx, table){
     var jqt = $(table);
     var name = $(table).attr("id");
-    var gadgets = tablesToGadgets[name];
-    var index = findGadgetIndexForVaddr(gadgets, addr);
-    if (index >= 0) {
-      scrollTableToSelectedRow(jqt, index);
+    var rows = TablesToRows[name];
+    var row = findGadgetRowForVaddr(rows, addr);
+    if (row >= 0) {
+      scrollTableToSelectedRow(jqt, row);
     }
   });
 }
@@ -165,10 +165,19 @@ function findGadgetIndexForVaddr(gadgets, vaddr) {
   return -1;
 }
 
-function findGadgetIndexForGadget(gadgets, gadget) {
-  for (var index in gadgets) {
-    if (gadgets[index].gadget == gadget) {
-      return index;
+function findGadgetRowForVaddr(rows, vaddr) {
+  for (var row in rows) {
+    if (VaddrRegExp.exec(rows[row])[1] == vaddr) {
+      return row;
+    }
+  }
+  return -1;
+}
+
+function findGadgetRowForGadget(rows, gadget) {
+  for (var row in rows) {
+    if (GadgetRegExp.exec(rows[row])[1] == gadget) {
+      return row;
     }
   }
   return -1;
