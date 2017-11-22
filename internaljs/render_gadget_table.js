@@ -26,7 +26,7 @@ function renderGadgetsTable(gadgets, gadgetshash) {
     'data-gadget="' + gadget.gadget + '" ' +
     'data-vaddr="' + gadget.vaddr + '" ' +
     '><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
-    
+
     rows.push(tr);
 
     if (rows.length == group || gi == gadgets.length-1) {

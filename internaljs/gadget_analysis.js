@@ -51,7 +51,7 @@ var GadgetRegExp = new RegExp('data-gadget="([^"]+)"', 'i');
 var TablesToRows = {};
 var TablesToGadgets = {};
 
-function analyzeResultErrorCapture(index, filename, dataArray, analysisElem, reporter) {
+function analyzeResultErrorCapture(index, filename, dataArray, offset, analysisElem, reporter) {
   var errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
 
@@ -67,13 +67,13 @@ function analyzeResultErrorCapture(index, filename, dataArray, analysisElem, rep
       var gadgets = JSON.parse(decoder.decode(dataArray));
       reporter.updateStatus("That worked. Rendering Table from gadgets found in json...");
       setTimeout(function() {
-        renderGadgetsTableInWorker(gadgets, filename, ropElem, reporter);
+        renderGadgetsTableInWorker(gadgets, offset, filename, ropElem, reporter);
       }, 20);
       return;
   } else {
     elf = analyzeElf(dataArray, elfElem, reporter)
     reporter.completedElf();
-    findRopThroughWorker(elf, filename, ropElem, reporter)
+    findRopThroughWorker(elf, filename, offset, ropElem, reporter)
   }
 }
 
@@ -188,7 +188,7 @@ function analyzeElf(dataArray, elfElem, reporter) {
     return elf;
 }
 
-function findRopThroughWorker(elf, filename, ropElem, reporter) {
+function findRopThroughWorker(elf, filename, offset, ropElem, reporter) {
     if (typeof(Worker) !== "undefined") {
 
       reporter.updateStatus("Converting ELF program segments " +
@@ -217,7 +217,7 @@ function findRopThroughWorker(elf, filename, ropElem, reporter) {
           worker.terminate();
           reporter.updateStatus("Rendering Table...");
           setTimeout(function() {
-            renderGadgetsTableInWorker(gadgets, filename + ".json", ropElem, reporter);
+            renderGadgetsTableInWorker(gadgets, offset, filename + ".json", ropElem, reporter);
           }, 20);
         }
       }
@@ -227,7 +227,10 @@ function findRopThroughWorker(elf, filename, ropElem, reporter) {
     }
 }
 
-function renderGadgetsTableInWorker(gadgets, jsonFileName, ropElem, reporter) {
+function renderGadgetsTableInWorker(gadgets, offset, jsonFileName, ropElem, reporter) {
+
+  gadgets = applyOffset(gadgets, offset);
+
   var expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);
 
@@ -409,4 +412,14 @@ function interpretFlags(flags, consts) {
     fstr = '(' + fstr + ')';
   }
   return fstr
+}
+
+
+function applyOffset(gadgets, offset) {
+  return gadgets.map(function(gadget) {
+    return {
+      vaddr: (parseInt(gadget.vaddr, 16) + offset).toString(16),
+      gadget: gadget.gadget
+    };
+  });
 }

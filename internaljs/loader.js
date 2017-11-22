@@ -2,7 +2,7 @@
 $(document).ready(attachVisualizers);
 
 function attachVisualizers() {
-    var divs = $('div.binaryVisualizer');
+    const divs = $('div.binaryVisualizer');
     divs.empty();
     divs.each(function(index, domElem) {
         attachVisualizer(domElem, index);
@@ -11,22 +11,22 @@ function attachVisualizers() {
 
 function attachVisualizer(domElem, index) {
 
-    var rootElem = $(domElem)
-    var title = rootElem.data("title");
+    const rootElem = $(domElem)
+    const title = rootElem.data("title");
 
-    var visualizerHtml =
+    const visualizerHtml =
     '<div class="file-collector" id="file-collector' + index + '">' +
       '<div class="file-title" id="file-title' + index + '">'+title+'</div>' +
       '<p>Select a file or drag/drop a file on the selector  ' +
       'below to begin analysis. Provide a 64-bit Linux ELF binary '
       +'to get generate a ROP gadget table from it (savable as JSON). '+
       'You may also provide a saved ROP JSON to avoid reparsing the same binary.</p></br>' +
+      '<span>Base Offset:</span><input type="text" id="base_offset' + index + '" value="0"></input>' +
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
     '</div>' +
 
     '<span id="filename' + index + '" style="display:none"></span>' +
-
     '<div id="progress-logs' + index + '" style="display:none">' +
       '<p id="progress' + index + '"></p>' +
       '<div class="logs" id="logs' + index + '" style="display:none"><strong>'+
@@ -47,7 +47,7 @@ function attachVisualizer(domElem, index) {
     $('#file' + index).on('change', getFileSelectHandler(getFileProcessor(index)));
 
     // Setup the dnd listeners.
-    var dropZone = $('#drop-zone' + index);
+    const dropZone = $('#drop-zone' + index);
     dropZone.on('dragover', handleDragOver);
     dropZone.on('drop', getFileDropHandler(getFileProcessor(index)));
 
@@ -68,7 +68,7 @@ function handleDragOver(evt) {
 
 function getFileSelectHandler(processFiles) {
     return function handleFileSelect(evt) {
-        var files = evt.originalEvent.target.files; // FileList object
+        const files = evt.originalEvent.target.files; // FileList object
         processFiles(files)
     }
 }
@@ -78,30 +78,30 @@ function getFileDropHandler(processFiles) {
         evt.stopPropagation();
         evt.preventDefault();
 
-        var files = evt.originalEvent.dataTransfer.files; // FileList object.
+        const files = evt.originalEvent.dataTransfer.files; // FileList object.
         processFiles(files)
     }
 }
 
 function getFileProcessor(index) {
     return function processFiles(files) {
-        var fc = $('#file-collector' + index);
+        const fc = $('#file-collector' + index);
         fc.toggle();
-        var fileElem = $('#filename' + index);
+        const fileElem = $('#filename' + index);
         fileElem.toggle();
-        var analysisElem = $('#analysis' + index);
+        const analysisElem = $('#analysis' + index);
         analysisElem.toggle();
 
-        var progressLogs = $("#progress-logs" + index);
+        const progressLogs = $("#progress-logs" + index);
 
-        var progressBarElem = progressLogs.children("#progress" + index);
-        var bar = new tinyProgressbar(progressBarElem.get(0));
+        const progressBarElem = progressLogs.children("#progress" + index);
+        const bar = new tinyProgressbar(progressBarElem.get(0));
         bar.setMinMax(0, 4);
         bar.message("Initializing...");
 
-        var logs = progressLogs.children("#logs" + index);
-        var reporter = {};
-        var statusBuffer = "";
+        const logs = progressLogs.children("#logs" + index);
+        const reporter = {};
+        let statusBuffer = "";
 
 
         setInterval(function() {
@@ -143,8 +143,8 @@ function getFileProcessor(index) {
           updateStatusAndProgress(4, "Completed all analysis!");
 
           //unblock the next one
-          var nindex = index+1;
-          var nextCollector = $("#file-collector" + nindex);
+          const nindex = index+1;
+          const nextCollector = $("#file-collector" + nindex);
           if (nextCollector.length > 0) {
             nextCollector.unblock();
           }
@@ -161,8 +161,8 @@ function getFileProcessor(index) {
             return;
         }
 
-        var f = files[0];
-        var reader = new FileReader();
+        const f = files[0];
+        const reader = new FileReader();
         reader.onabort = function(event) {
             reporter.updateStatus('Aborted file loading!');
         }
@@ -175,7 +175,15 @@ function getFileProcessor(index) {
         }
         reader.onload = function(event) {
           reporter.completedFileLoad();
-          analyzeResultErrorCapture(index, f.name, event.target.result, analysisElem, reporter);
+          const offsetStr = $("#base_offset" + index).val();
+          let offset = 0;
+          try {
+            offset = parseInt(offsetStr, 16);
+          } catch (e) {
+            reporter.updateStatus("Error occurred parsing offset " + offsetStr + " as a Hexadecimal string. Defaulting to 0.");
+            offset = 0;
+          }
+          analyzeResultErrorCapture(index, f.name, event.target.result, offset, analysisElem, reporter);
         }
 
         fileElem.append('<strong>' + escape(f.name) + '</strong>');

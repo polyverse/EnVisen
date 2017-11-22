@@ -56,7 +56,7 @@ function getAllGadgetsInSection(section) {
 
 function addROPGadgets(section) {
 
-       gadgets = [
+       const gadgets = [
                        [toMatcher("\xc3"), 1, 1],
                        [toMatcher("\xc2[\x00-\xff]{2}"), 3, 1],
                        [toMatcher("\xcb"), 1, 1],
@@ -69,7 +69,7 @@ function addROPGadgets(section) {
 }
 
 function addJOPGadgets(section) {
-             gadgets = [
+             const gadgets = [
                                 [toMatcher("\xff[\x20\x21\x22\x23\x26\x27]{1}"), 2, 1],
                                 [toMatcher("\xff[\xe0\xe1\xe2\xe3\xe4\xe6\xe7]{1}"), 2, 1],
                                 [toMatcher("\xff[\x10\x11\x12\x13\x16\x17]{1}"), 2, 1],
@@ -83,7 +83,7 @@ function addJOPGadgets(section) {
    }
 
  function addSYSGadgets( section) {
-         gadgets = [
+         const gadgets = [
                             [toMatcher("\xcd\x80"), 2, 1],
                             [toMatcher("\x0f\x34"), 2, 1],
                             [toMatcher("\x0f\x05"), 2, 1],
