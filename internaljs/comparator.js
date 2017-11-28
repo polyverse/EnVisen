@@ -19,7 +19,7 @@ function attachComparators() {
   });
 
   $("#generate-rand-chain-btn").click(function(){
-    var chain = generateRandomChain(tablesToGadgets["table1"]);
+    var chain = generateRandomChain(TablesToGadgets["table1"]);
     $("#rop-chain-content").val(chain);
   });
 
