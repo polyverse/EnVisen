@@ -130,14 +130,11 @@ function getFileProcessor(index) {
         reporter.completedFileLoad = function() {
           updateStatusAndProgress(1, "Completed File loading!");
         }
-        reporter.completedElf = function() {
-          updateStatusAndProgress(2, "Completed ELF analysis!");
+        reporter.completedFileAnalysis = function() {
+          updateStatusAndProgress(3, "Completed File analysis!");
         }
         reporter.completedRop = function()  {
           updateStatusAndProgress(3, "Completed ROP analysis!");
-        }
-        reporter.completedJsonLoad = function() {
-          updateStatusAndProgress(3, "Completed Loading JSON ROP data!");
         }
         reporter.completedAnalysis = function()  {
           updateStatusAndProgress(4, "Completed all analysis!");

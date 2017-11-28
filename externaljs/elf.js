@@ -943,6 +943,55 @@ var Elf = (function() {
     4: "CORE",
   });
 
+
+
+  // Copied from: https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#Section_header
+  Elf.ShFlags = Object.freeze({
+    SHF_WRITE: 0x1,
+    SHF_ALLOC: 0x2,
+    SHF_EXECINSTR: 0x4,
+    SHF_MERGE: 0x10,
+    SHF_STRINGS: 0x20,
+    SHF_INFO_LINK: 0x40,
+    SHF_LINK_ORDER: 0x80,
+    SHF_OS_NONCONFORMING: 0x100,
+    SHF_GROUP: 0x200,
+    SHF_TLS: 0x400,
+    SHF_MASKOS: 0x0ff00000,
+    SHF_MASKPROC: 0xf0000000,
+    SHF_ORDERED: 0x4000000,
+    SHF_EXCLUDE: 0x8000000,
+
+    0x1: "SHF_WRITE",
+    0x2: "SHF_ALLOC",
+    0x4: "SHF_EXECINSTR",
+    0x10: "SHF_MERGE",
+    0x20: "SHF_STRINGS",
+    0x40: "SHF_INFO_LINK",
+    0x80: "SHF_LINK_ORDER",
+    0x100: "SHF_OS_NONCONFORMING",
+    0x200: "SHF_GROUP",
+    0x400: "SHF_TLS",
+    0x0ff00000: "SHF_MASKOS",
+    0xf0000000: "SHF_MASKPROC",
+    0x4000000: "SHF_ORDERED",
+    0x8000000: "SHF_EXCLUDE",
+  });
+
+  // Copied from: https://docs.oracle.com/cd/E19683-01/816-1386/6m7qcoblk/index.html#chapter6-tbl-39
+  Elf.PhFlags = Object.freeze({
+    PF_X: 0x1,
+    PF_W: 0x2,
+    PF_R: 0x4,
+    PF_MASKPROC: 0xf0000000,
+
+    0x1: "PF_X",
+    0x2: "PF_W",
+    0x4: "PF_R",
+    0xf0000000: "PF_MASKPROC"
+  });
+
+
   function Elf(_io, _parent, _root) {
     this._io = _io;
     this._parent = _parent;
