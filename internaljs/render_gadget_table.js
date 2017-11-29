@@ -1,9 +1,9 @@
 function renderGadgetsTable(gadgets, gadgetshash) {
-  var group=1000;
-  var rows = [];
-  var newGadgetsHash = {};
-  for (var gi in gadgets) {
-    var gadget = gadgets[gi];
+  const group=10000;
+  let rows = [];
+  const newGadgetsHash = {};
+  for (let gi in gadgets) {
+    const gadget = gadgets[gi];
 
     if (gadget.gadget in newGadgetsHash) {
       //push another address
@@ -13,16 +13,16 @@ function renderGadgetsTable(gadgets, gadgetshash) {
       newGadgetsHash[gadget.gadget] = [gadget.vaddr];
     }
 
-    var className = ""
+    let className = ""
     if (typeof(gadgetshash[gadget.gadget]) !== "undefined" &&
-        gadgetshash[gadget.gadget].includes(gadget.vaddr)) {
+      gadgetshash[gadget.gadget].includes(gadget.vaddr)) {
       className = "survived";
     } else if (gadget.gadget in gadgetshash) {
       className = "moved";
     } else {
       className = "died"
     }
-    var tr ='<tr class="' + className + '" ' +
+    const tr ='<tr class="' + className + '" ' +
     'data-gadget="' + gadget.gadget + '" ' +
     'data-vaddr="' + gadget.vaddr + '" ' +
     '><td>' + gadget.vaddr + '</td><td>' + gadget.gadget + '</td></tr>';
@@ -30,7 +30,7 @@ function renderGadgetsTable(gadgets, gadgetshash) {
     rows.push(tr);
 
     if (rows.length == group || gi == gadgets.length-1) {
-      postMessage({status: "Rendered " + (parseInt(gi)+1) + " of " + gadgets.length, rows: rows});
+      postMessage({status: "==> Rendered " + (parseInt(gi)+1) + " of " + gadgets.length, rows: rows});
       rows = [];
     }
   }
@@ -39,6 +39,6 @@ function renderGadgetsTable(gadgets, gadgetshash) {
 
 //Main Webworker handler
 onmessage = function (e) {
-   elements = renderGadgetsTable(e.data.gadgets, e.data.gadgetshash);
+   renderGadgetsTable(e.data.gadgets, e.data.gadgetshash);
    close();
 }

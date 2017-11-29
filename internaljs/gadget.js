@@ -87,16 +87,16 @@ function  getAllGadgets(sections, arch, mode) {
   let gadgets = [];
 
   for (si in sections) {
-    var offByOne = parseInt(si)+1;
-    postMessage({status: "Finding gadgets in section " + offByOne + " of " + sections.length});
-    var section = sections[si];
-    var localgadgets = getAllGadgetsInSection(section, arch, mode);
-    postMessage({status: "Found " +localgadgets.length+ " gadgets in section"});
+    const offByOne = parseInt(si)+1;
+    postMessage({status: "==> Finding gadgets in section " + offByOne + " of " + sections.length});
+    const section = sections[si];
+    const localgadgets = getAllGadgetsInSection(section, arch, mode);
+    postMessage({status: "==> Found " +localgadgets.length+ " gadgets in section"});
     gadgets = gadgets.concat(localgadgets);
   }
 
   //# Pass clean single instruction and unknown instructions
-  postMessage({status: "Cleaning gadgets (removing blacklisted ones, false positives, redundant, etc.) from " + gadgets.length + " total gadgets."});
+  postMessage({status: "==> Cleaning gadgets (removing blacklisted ones, false positives, redundant, etc.) from " + gadgets.length + " total gadgets."});
   gadgets = passClean(gadgets, arch)
 
   //# Delete duplicate gadgets
@@ -104,7 +104,7 @@ function  getAllGadgets(sections, arch, mode) {
   //gadgets = deleteDuplicateGadgets(gadgets)
 
   // Strip fields no longer needed
-  postMessage({status: "Stripping " + gadgets.length+ " gadgets for rendering"});
+  postMessage({status: "==> Stripping " + gadgets.length+ " gadgets for rendering"});
   gadgets = stripGadgets(gadgets);
 
 
@@ -116,14 +116,19 @@ function  getAllGadgets(sections, arch, mode) {
 function getAllGadgetsInSection(section, arch, mode) {
    var gadgets = [];
 
+   postMessage({status: "====> Looking for ROP gadgets out of ROP/JOP/SYS gadget types"});
    var ropGadgets = addROPGadgets(section, arch, mode);
    gadgets = gadgets.concat(ropGadgets);
-   postMessage({status: "Found " + ropGadgets.length + " ROP gadgets."});
+   postMessage({status: "====> Found " + ropGadgets.length + " ROP gadgets."});
+
+   postMessage({status: "====> Looking for JOP gadgets out of ROP/JOP/SYS gadget types"});
    var jopGadgets = addJOPGadgets(section, arch, mode);
-   postMessage({status: "Found " + jopGadgets.length + " JOP gadgets."});
+   postMessage({status: "====> Found " + jopGadgets.length + " JOP gadgets."});
    gadgets = gadgets.concat(jopGadgets);
+
+   postMessage({status: "====> Looking for SYS gadgets out of ROP/JOP/SYS gadget types"});
    var sysGadgets = addSYSGadgets(section, arch, mode);
-   postMessage({status: "Found " + sysGadgets.length + " SYS gadgets."});
+   postMessage({status: "====> Found " + sysGadgets.length + " SYS gadgets."});
    gadgets = gadgets.concat(sysGadgets);
    return gadgets;
 }
@@ -274,61 +279,81 @@ function addJOPGadgets(section, arch, mode) {
 
  function gadgetsFinding(section, gadgets, arch, mode, offset) {
      var offset = offset || 0;
-     var C_OP    = 0;
-     var C_SIZE  = 1;
-     var C_ALIGN = 2;
-     var PREV_BYTES = 9; //# Number of bytes prior to the gadget to store.
-     var ret = [];
-     var md = new cs.Capstone(arch, mode);
+     const C_OP    = 0;
+     const C_SIZE  = 1;
+     const C_ALIGN = 2;
+     const PREV_BYTES = 9; //# Number of bytes prior to the gadget to store.
+     const ret = [];
+     const md = new cs.Capstone(arch, mode);
 
-     var opcodesStr = encodeArray(section["opcodes"]);
-     for (var gadi in gadgets) {
-         var gad = gadgets[gadi];
-         var oprg = new RegExp(gad[C_OP], "g");
-         var opri = new RegExp(gad[C_OP], "i");
-         var allRefRet = matchPositions(oprg, opcodesStr)
-         for (refi in allRefRet) {
-           var ref = allRefRet[refi];
+     const errorTypes = {};
+
+     const opcodesStr = encodeArray(section["opcodes"]);
+     for (let gadi in gadgets) {
+         {
+           const offByOne = parseInt(gadi) + 1;
+           postMessage({status: "======> Looking for gadget " + offByOne + " of " + gadgets.length});
+         }
+         const gad = gadgets[gadi];
+         const oprg = new RegExp(gad[C_OP], "g");
+         const opri = new RegExp(gad[C_OP], "i");
+         const allRefRet = matchPositions(oprg, opcodesStr)
+         let updateCounter = 0;
+         for (let refi in allRefRet) {
+           updateCounter++;
+           if (updateCounter >= 10000) {
+             const offByOne = parseInt(refi) + 1;
+             postMessage({status: "========> Completed " + offByOne + " out of " + allRefRet.length});
+             updateCounter = 0;
+           }
+
+           const ref = allRefRet[refi];
            //ROPgadget's depth option goes here...
-             for (var i = 0; i < 10; i++) {
-                 if ((section["vaddr"]+ref-(i*gad[C_ALIGN])) % gad[C_ALIGN] == 0) {
-                     var opcode = section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]);
-                     var decodes = [];
-                     try {
-                        decodes = md.disasm(opcode, section["vaddr"]+ref);
-                      } catch (e) {
-                        postMessage({status: "Ignoring disassembler error: " + e});
-                        continue
+           for (let i = 0; i < 10; i++) {
+               if ((section["vaddr"]+ref-(i*gad[C_ALIGN])) % gad[C_ALIGN] == 0) {
+                   const opcode = section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]);
+                   let decodes = [];
+                   try {
+                      decodes = md.disasm(opcode, section["vaddr"]+ref);
+                    } catch (e) {
+                      if (typeof(errorTypes[e]) === 'undefined') {
+                        errorTypes[e] = 1;
+                      } else {
+                        errorTypes[e]++;
                       }
-                     var gadget = "";
-                     var lastdecode;
-                     for (var decodei in decodes) {
-                       var decode = decodes[decodei];
-                       gadget += (decode.mnemonic + " " + decode.op_str + " ; ").replace("  ", " ");
-                       lastdecode = decode;
-                     }
-                     if (!lastdecode || !opri.exec(encodeArray(lastdecode.bytes))) {
-                             continue;
-                     }
-                     if (gadget.length > 0) {
-                         var gadget = gadget.slice(0,gadget.length-3);
-                         var off = offset;
-                         var vaddr = off+section["vaddr"]+ref-(i*gad[C_ALIGN]);
-                         var prevBytesAddr = Math.max(section["vaddr"], vaddr - PREV_BYTES);
-                         var prevBytes = section["opcodes"].slice(prevBytesAddr-section["vaddr"],vaddr-section["vaddr"]);
-                         var newGad = {
-                             "vaddr" :  vaddr,
-                             "gadget" : gadget,
-                             "decodes" : decodes,
-                             "bytes": section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]),
-                             "prev": prevBytes
-                           };
-                         ret.push(newGad);
-                     }
+                      continue
+                    }
+                   let gadget = "";
+                   let lastdecode;
+                   for (let decodei in decodes) {
+                     const decode = decodes[decodei];
+                     gadget += (decode.mnemonic + " " + decode.op_str + " ; ").replace("  ", " ");
+                     lastdecode = decode;
                    }
-               }
+                   if (!lastdecode || !opri.exec(encodeArray(lastdecode.bytes))) {
+                           continue;
+                   }
+                   if (gadget.length > 0) {
+                       gadget = gadget.slice(0,gadget.length-3);
+                       const off = offset;
+                       const vaddr = off+section["vaddr"]+ref-(i*gad[C_ALIGN]);
+                       const prevBytesAddr = Math.max(section["vaddr"], vaddr - PREV_BYTES);
+                       const prevBytes = section["opcodes"].slice(prevBytesAddr-section["vaddr"],vaddr-section["vaddr"]);
+                       const newGad = {
+                           "vaddr" :  vaddr,
+                           "gadget" : gadget,
+                           "decodes" : decodes,
+                           "bytes": section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]),
+                           "prev": prevBytes
+                         };
+                       ret.push(newGad);
+                   }
+                 }
+             }
          }
      }
+
+     postMessage({status: "Following errors occurred when finding rop gadgets: " + JSON.stringify(errorTypes)});
 
      try {
        md.close();
