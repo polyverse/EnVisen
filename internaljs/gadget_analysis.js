@@ -65,9 +65,10 @@ function findRopThroughWorker(sections, filename, options, ropElem, reporter) {
         sections: sections,
         arch: options.arch,
         bits: options.bits,
-        endian: options.endian
+        endian: options.endian,
+        thumb: options.thumb
       });
-      
+
       worker.onmessage = function(e) {
         reporter.updateStatus(e.data.status);
         if (e.data.gadgets) {

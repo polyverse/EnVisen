@@ -215,6 +215,11 @@ function getFileProcessor(index) {
             endian
           };
 
+          if (options.arch == "thumb") {
+            options.arch = "arm";
+            options.thumb = true;
+          }
+
           analyzeResultErrorCapture(index, f.name, event.target.result, options, analysisElem, reporter);
         }
 
