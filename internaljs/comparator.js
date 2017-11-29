@@ -3,7 +3,7 @@ $(document).ready(attachComparators);
 function attachComparators() {
 
   $("#comparator-root").block({
-    message: 'Analyse a file (or more) to enable ROP simulation tools.',
+    message: 'Analyze a file (or more) to enable ROP simulation tools.',
     css: { border: '1px dotted blue', cursor: 'not-allowed' },
     overlayCSS:  { opacity:         0.2, cursor: 'not-allowed' }
   });
