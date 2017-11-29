@@ -18,12 +18,35 @@ function attachVisualizer(domElem, index) {
     '<div class="file-collector" id="file-collector' + index + '">' +
       '<div class="file-title" id="file-title' + index + '">'+title+'</div>' +
       '<p>Select a file or drag/drop a file on the selector  ' +
-      'below to begin analysis. Provide a 64-bit Linux ELF binary '
-      +'to get generate a ROP gadget table from it (savable as JSON). '+
+      'below to begin analysis. Provide a 64-bit Linux ELF binary ' +
+      'to get generate a ROP gadget table from it (savable as JSON). '+
       'You may also provide a saved ROP JSON to avoid reparsing the same binary.</p></br>' +
-      '<span>Base Offset:</span><input type="text" id="base_offset' + index + '" value="0"></input>' +
+      '<table><tr><td>' +
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
+      '</td><td style="vertical-align: top;">' +
+      '<span>Architecture:</span><select id="arch' + index + '" value="0">' +
+        '<option>Auto Detect</option>' +
+        '<option>x86</option>' +
+        '<option>ARM</option>' +
+        '<option>ARM64</option>' +
+        '<option>MIPS</option>' +
+        '<option>PPC</option>' +
+        '<option>SPARC</option>' +
+        '<option>Thumb</option>' +
+        '</select><br/>' +
+      '<span>Bits:</span><select id="bits' + index + '" value="0">' +
+        '<option>Auto Detect</option>' +
+        '<option>32</option>' +
+        '<option>64</option>' +
+        '</select><br/>' +
+      '<span>Endian:</span><select id="endian' + index + '" value="0">' +
+        '<option>Auto Detect</option>' +
+        '<option>Little</option>' +
+        '<option>Big</option>' +
+        '</select><br/>' +
+      '<span>Base Offset:</span><input type="text" id="base_offset' + index + '" value="0"></input><br/>' +
+      '</td></tr></table>' +
     '</div>' +
 
     '<span id="filename' + index + '" style="display:none"></span>' +
@@ -180,7 +203,19 @@ function getFileProcessor(index) {
             reporter.updateStatus("Error occurred parsing offset " + offsetStr + " as a Hexadecimal string. Defaulting to 0.");
             offset = 0;
           }
-          analyzeResultErrorCapture(index, f.name, event.target.result, offset, analysisElem, reporter);
+
+          const arch = $("#arch" + index).val().toLowerCase();
+          const bits = $("#bits" + index).val().toLowerCase();
+          const endian = $("#endian" + index).val().toLowerCase();
+
+          const options = {
+            offset,
+            arch,
+            bits,
+            endian
+          };
+
+          analyzeResultErrorCapture(index, f.name, event.target.result, options, analysisElem, reporter);
         }
 
         fileElem.append('<strong>' + escape(f.name) + '</strong>');

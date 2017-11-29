@@ -4,7 +4,7 @@ var GadgetRegExp = new RegExp('data-gadget="([^"]+)"', 'i');
 var TablesToRows = {};
 var TablesToGadgets = {};
 
-function analyzeResultErrorCapture(index, filename, dataArray, offset, analysisElem, reporter) {
+function analyzeResultErrorCapture(index, filename, dataArray, options, analysisElem, reporter) {
   var errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
 
@@ -14,6 +14,8 @@ function analyzeResultErrorCapture(index, filename, dataArray, offset, analysisE
   var ropElem=$("<div/>")
   $(analysisElem).append(ropElem);
 
+  let sections = [];
+
   if (filename.endsWith(".json")) {
       reporter.updateStatus("Filename ends with .json. Testing whether data is JSON...");
       var decoder = new TextDecoder('utf8');
@@ -21,44 +23,51 @@ function analyzeResultErrorCapture(index, filename, dataArray, offset, analysisE
       reporter.completedFileAnalysis();
       reporter.updateStatus("That worked. Rendering Table from gadgets found in json...");
       setTimeout(function() {
-        renderGadgetsTableInWorker(gadgets, offset, filename, ropElem, reporter);
+        renderGadgetsTableInWorker(gadgets, options, filename, ropElem, reporter);
       }, 20);
       return;
-  } else {
-    try {
-      reporter.updateStatus("Attempting to open as ELF....");
-      var sections = analyzeElf(dataArray, formatElem, reporter)
-    } catch (e) {
-      reporter.updateStatus("Couldn't parse as ELF due to exception: " + e);
+    } else {
       try {
-        reporter.updateStatus("Attempting to open as PE....");
-        var sections = analyzePe(dataArray, formatElem, reporter)
+        reporter.updateStatus("Attempting to open as ELF....");
+        [sections, options] = analyzeElf(dataArray, options, formatElem, reporter);
       } catch (e) {
-        reporter.updateStatus("Couldn't parse as PE due to exception: " + e);
+        reporter.updateStatus("Couldn't parse as ELF due to exception: " + e);
         try {
-          reporter.updateStatus("Attempting to open as MachO....");
-          var sections = analyzeMachO(dataArray, formatElem, reporter)
+          reporter.updateStatus("Attempting to open as PE....");
+          [sections, options] = analyzePe(dataArray, options, formatElem, reporter);
         } catch (e) {
-          reporter.updateStatus("Couldn't parse as MachO due to exception: " + e);
-          reporter.updateStatus("We've run out of file formats we understand. Giving up.");
-          throw e;
+          reporter.updateStatus("Couldn't parse as PE due to exception: " + e);
+          try {
+            reporter.updateStatus("Attempting to open as MachO....");
+            [sections, options] = analyzeMachO(dataArray, options, formatElem, reporter);
+          } catch (e) {
+            reporter.updateStatus("Couldn't parse as MachO due to exception: " + e);
+            reporter.updateStatus("We've run out of file formats we understand. Treating this as a RAW file (like a kernel or bootloader).");
+            reporter.updateStatus("Attempting to parse as RAW binary....");
+            [sections, options] = analyzeRaw(dataArray, options, formatElem, reporter);
+          }
         }
       }
+
+      reporter.completedFileAnalysis();
+      findRopThroughWorker(sections, filename, options, ropElem, reporter)
+
     }
-
-    reporter.completedFileAnalysis();
-    findRopThroughWorker(sections, filename, offset, ropElem, reporter)
-
-  }
 }
 
-function findRopThroughWorker(sections, filename, offset, ropElem, reporter) {
+function findRopThroughWorker(sections, filename, options, ropElem, reporter) {
     if (typeof(Worker) !== "undefined") {
 
       reporter.updateStatus("Finding ROP gadgets in " + sections.length + " sections found in the binary provided.");
 
       var worker = new Worker("internaljs/gadget.js");
-      worker.postMessage(sections);
+      worker.postMessage({
+        sections: sections,
+        arch: options.arch,
+        bits: options.bits,
+        endian: options.endian
+      });
+      
       worker.onmessage = function(e) {
         reporter.updateStatus(e.data.status);
         if (e.data.gadgets) {
@@ -66,7 +75,7 @@ function findRopThroughWorker(sections, filename, offset, ropElem, reporter) {
           worker.terminate();
           reporter.updateStatus("Rendering Table...");
           setTimeout(function() {
-            renderGadgetsTableInWorker(gadgets, offset, filename + ".json", ropElem, reporter);
+            renderGadgetsTableInWorker(gadgets, options, filename + ".json", ropElem, reporter);
           }, 20);
         }
       }
@@ -76,9 +85,9 @@ function findRopThroughWorker(sections, filename, offset, ropElem, reporter) {
     }
 }
 
-function renderGadgetsTableInWorker(gadgets, offset, jsonFileName, ropElem, reporter) {
+function renderGadgetsTableInWorker(gadgets, options, jsonFileName, ropElem, reporter) {
 
-  gadgets = applyOffset(gadgets, offset);
+  gadgets = applyOffset(gadgets, options.offset);
 
   var expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);

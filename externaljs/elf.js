@@ -876,6 +876,7 @@ var Elf = (function() {
     SPARC: 2,
     X86: 3,
     MIPS: 8,
+    SPARC32PLUS: 18,
     POWERPC: 20,
     ARM: 40,
     SUPERH: 42,
@@ -887,6 +888,7 @@ var Elf = (function() {
     2: "SPARC",
     3: "X86",
     8: "MIPS",
+    18: "SPARC32PLUS",
     20: "POWERPC",
     40: "ARM",
     42: "SUPERH",
@@ -1131,7 +1133,7 @@ var Elf = (function() {
       ProgramHeader.prototype._readLE = function() {
         this.type = this._io.readU4le();
         if (this._root.bits == Elf.Bits.B64) {
-          this.flags64 = this._io.readU4le();
+          this.flags = this._io.readU4le();
         }
         switch (this._root.bits) {
         case Elf.Bits.B32:
@@ -1174,7 +1176,7 @@ var Elf = (function() {
           break;
         }
         if (this._root.bits == Elf.Bits.B32) {
-          this.flags32 = this._io.readU4le();
+          this.flags = this._io.readU4le();
         }
         switch (this._root.bits) {
         case Elf.Bits.B32:
@@ -1188,7 +1190,7 @@ var Elf = (function() {
       ProgramHeader.prototype._readBE = function() {
         this.type = this._io.readU4be();
         if (this._root.bits == Elf.Bits.B64) {
-          this.flags64 = this._io.readU4be();
+          this.flags = this._io.readU4be();
         }
         switch (this._root.bits) {
         case Elf.Bits.B32:
@@ -1231,7 +1233,7 @@ var Elf = (function() {
           break;
         }
         if (this._root.bits == Elf.Bits.B32) {
-          this.flags32 = this._io.readU4be();
+          this.flags = this._io.readU4be();
         }
         switch (this._root.bits) {
         case Elf.Bits.B32:
