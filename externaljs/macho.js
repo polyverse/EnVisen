@@ -1,16 +1,5 @@
-// Copied from: http://formats.kaitai.io/mach_o/javascript.html
-
 // This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
 
-(function (root, factory) {
-  if (typeof define === 'function' && define.amd) {
-    define(['kaitai-struct/KaitaiStream'], factory);
-  } else if (typeof module === 'object' && module.exports) {
-    module.exports = factory(require('kaitai-struct/KaitaiStream'));
-  } else {
-    root.MachO = factory(root.KaitaiStream);
-  }
-}(this, function (KaitaiStream) {
 var MachO = (function() {
   MachO.LoadCommandType = Object.freeze({
     SEGMENT: 1,
@@ -263,9 +252,6 @@ var MachO = (function() {
     this._parent = _parent;
     this._root = _root || this;
 
-    this._read();
-  }
-  MachO.prototype._read = function() {
     this.magic = this._io.readU4be();
     this.header = new MachHeader(this._io, this, this._root);
     this.loadCommands = new Array(this.header.ncmds);
@@ -280,9 +266,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    RpathCommand.prototype._read = function() {
       this.pathOffset = this._io.readU4le();
       this.path = KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, true), "utf-8");
     }
@@ -296,9 +279,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    Uleb128.prototype._read = function() {
       this.b1 = this._io.readU1();
       if ((this.b1 & 128) != 0) {
         this.b2 = this._io.readU1();
@@ -346,9 +326,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    SourceVersionCommand.prototype._read = function() {
       this.version = this._io.readU8le();
     }
 
@@ -379,9 +356,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    CsBlob.prototype._read = function() {
       this.magic = this._io.readU4be();
       this.length = this._io.readU4be();
       switch (this.magic) {
@@ -432,9 +406,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Entitlement.prototype._read = function() {
         this.data = this._io.readBytesFull();
       }
 
@@ -447,9 +418,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      CodeDirectory.prototype._read = function() {
         this.version = this._io.readU4be();
         this.flags = this._io.readU4be();
         this.hashOffset = this._io.readU4be();
@@ -527,9 +495,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      EntitlementsBlobIndex.prototype._read = function() {
         this.type = this._io.readU4be();
         this.offset = this._io.readU4be();
       }
@@ -554,9 +519,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Data.prototype._read = function() {
         this.length = this._io.readU4be();
         this.value = this._io.readBytes(this.length);
         this.padding = this._io.readBytes((4 - (this.length & 3)));
@@ -571,9 +533,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      SuperBlob.prototype._read = function() {
         this.count = this._io.readU4be();
         this.blobs = new Array(this.count);
         for (var i = 0; i < this.count; i++) {
@@ -636,9 +595,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Expr.prototype._read = function() {
         this.op = this._io.readU4be();
         switch (this.op) {
         case MachO.CsBlob.Expr.OpEnum.CERT_GENERIC:
@@ -689,9 +645,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        InfoKeyFieldExpr.prototype._read = function() {
           this.data = new Data(this._io, this, this._root);
           this.match = new Match(this._io, this, this._root);
         }
@@ -705,9 +658,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        CertSlotExpr.prototype._read = function() {
           this.value = this._io.readU4be();
         }
 
@@ -720,9 +670,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        CertGenericExpr.prototype._read = function() {
           this.certSlot = this._io.readU4be();
           this.data = new Data(this._io, this, this._root);
           this.match = new Match(this._io, this, this._root);
@@ -737,9 +684,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        IdentExpr.prototype._read = function() {
           this.identifier = new Data(this._io, this, this._root);
         }
 
@@ -752,9 +696,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        CertFieldExpr.prototype._read = function() {
           this.certSlot = this._io.readU4be();
           this.data = new Data(this._io, this, this._root);
           this.match = new Match(this._io, this, this._root);
@@ -769,9 +710,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        AnchorHashExpr.prototype._read = function() {
           this.certSlot = this._io.readU4be();
           this.data = new Data(this._io, this, this._root);
         }
@@ -785,9 +723,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        AppleGenericAnchorExpr.prototype._read = function() {
         }
         Object.defineProperty(AppleGenericAnchorExpr.prototype, 'value', {
           get: function() {
@@ -807,9 +742,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        EntitlementFieldExpr.prototype._read = function() {
           this.data = new Data(this._io, this, this._root);
           this.match = new Match(this._io, this, this._root);
         }
@@ -823,9 +755,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        AndExpr.prototype._read = function() {
           this.left = new Expr(this._io, this, this._root);
           this.right = new Expr(this._io, this, this._root);
         }
@@ -839,9 +768,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        OrExpr.prototype._read = function() {
           this.left = new Expr(this._io, this, this._root);
           this.right = new Expr(this._io, this, this._root);
         }
@@ -878,9 +804,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      BlobIndex.prototype._read = function() {
         this.type = this._io.readU4be();
         this.offset = this._io.readU4be();
       }
@@ -930,9 +853,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Match.prototype._read = function() {
         this.matchOp = this._io.readU4be();
         if (this.matchOp != MachO.CsBlob.Match.Op.EXISTS) {
           this.data = new Data(this._io, this, this._root);
@@ -948,9 +868,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Requirement.prototype._read = function() {
         this.kind = this._io.readU4be();
         this.expr = new Expr(this._io, this, this._root);
       }
@@ -964,9 +881,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      BlobWrapper.prototype._read = function() {
         this.data = this._io.readBytesFull();
       }
 
@@ -979,9 +893,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Entitlements.prototype._read = function() {
         this.count = this._io.readU4be();
         this.items = new Array(this.count);
         for (var i = 0; i < this.count; i++) {
@@ -1001,9 +912,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    RoutinesCommand.prototype._read = function() {
       this.initAddress = this._io.readU4le();
       this.initModule = this._io.readU4le();
       this.reserved = this._io.readBytes(24);
@@ -1018,9 +926,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    RoutinesCommand64.prototype._read = function() {
       this.initAddress = this._io.readU8le();
       this.initModule = this._io.readU8le();
       this.reserved = this._io.readBytes(48);
@@ -1035,9 +940,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    LinkerOptionCommand.prototype._read = function() {
       this.numStrings = this._io.readU4le();
       this.strings = new Array(this.numStrings);
       for (var i = 0; i < this.numStrings; i++) {
@@ -1054,9 +956,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    SegmentCommand64.prototype._read = function() {
       this.segname = KaitaiStream.bytesToStr(KaitaiStream.bytesStripRight(this._io.readBytes(16), 0), "ascii");
       this.vmaddr = this._io.readU8le();
       this.vmsize = this._io.readU8le();
@@ -1078,9 +977,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Section64.prototype._read = function() {
         this.sectName = KaitaiStream.bytesToStr(KaitaiStream.bytesStripRight(this._io.readBytes(16), 0), "ascii");
         this.segName = KaitaiStream.bytesToStr(KaitaiStream.bytesStripRight(this._io.readBytes(16), 0), "ascii");
         this.addr = this._io.readU8le();
@@ -1101,14 +997,9 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        CfStringList.prototype._read = function() {
           this.items = [];
-          var i = 0;
           while (!this._io.isEof()) {
             this.items.push(new CfString(this._io, this, this._root));
-            i++;
           }
         }
 
@@ -1121,9 +1012,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        CfString.prototype._read = function() {
           this.isa = this._io.readU8le();
           this.info = this._io.readU8le();
           this.data = this._io.readU8le();
@@ -1139,9 +1027,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        EhFrameItem.prototype._read = function() {
           this.length = this._io.readU4le();
           if (this.length == 4294967295) {
             this.length64 = this._io.readU8le();
@@ -1167,9 +1052,6 @@ var MachO = (function() {
             this._parent = _parent;
             this._root = _root || this;
 
-            this._read();
-          }
-          CharChain.prototype._read = function() {
             this.chr = this._io.readU1();
             if (this.chr != 0) {
               this.next = new CharChain(this._io, this, this._root);
@@ -1185,9 +1067,6 @@ var MachO = (function() {
             this._parent = _parent;
             this._root = _root || this;
 
-            this._read();
-          }
-          Cie.prototype._read = function() {
             this.version = this._io.readU1();
             this.augStr = new CharChain(this._io, this, this._root);
             this.codeAlignmentFactor = new Uleb128(this._io, this, this._root);
@@ -1207,9 +1086,6 @@ var MachO = (function() {
             this._parent = _parent;
             this._root = _root || this;
 
-            this._read();
-          }
-          AugmentationEntry.prototype._read = function() {
             this.length = new Uleb128(this._io, this, this._root);
             if (this._parent.augStr.next.chr == 82) {
               this.fdePointerEncoding = this._io.readU1();
@@ -1228,14 +1104,9 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        EhFrame.prototype._read = function() {
           this.items = [];
-          var i = 0;
           while (!this._io.isEof()) {
             this.items.push(new EhFrameItem(this._io, this, this._root));
-            i++;
           }
         }
 
@@ -1248,14 +1119,9 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        PointerList.prototype._read = function() {
           this.items = [];
-          var i = 0;
           while (!this._io.isEof()) {
             this.items.push(this._io.readU8le());
-            i++;
           }
         }
 
@@ -1268,14 +1134,9 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        StringList.prototype._read = function() {
           this.strings = [];
-          var i = 0;
           while (!this._io.isEof()) {
             this.strings.push(KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, true), "ascii"));
-            i++;
           }
         }
 
@@ -1395,9 +1256,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    VmProt.prototype._read = function() {
       this.stripRead = this._io.readBitsInt(1) != 0;
       this.isMask = this._io.readBitsInt(1) != 0;
       this.reserved0 = this._io.readBitsInt(1) != 0;
@@ -1454,9 +1312,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    DysymtabCommand.prototype._read = function() {
       this.iLocalSym = this._io.readU4le();
       this.nLocalSym = this._io.readU4le();
       this.iExtDefSym = this._io.readU4le();
@@ -1501,9 +1356,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    MachHeader.prototype._read = function() {
       this.cputype = this._io.readU4le();
       this.cpusubtype = this._io.readU4le();
       this.filetype = this._io.readU4le();
@@ -1524,9 +1376,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    LinkeditDataCommand.prototype._read = function() {
       this.dataOff = this._io.readU4le();
       this.dataSize = this._io.readU4le();
     }
@@ -1540,9 +1389,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    SubCommand.prototype._read = function() {
       this.name = new LcStr(this._io, this, this._root);
     }
 
@@ -1555,9 +1401,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    TwolevelHintsCommand.prototype._read = function() {
       this.offset = this._io.readU4le();
       this.numHints = this._io.readU4le();
     }
@@ -1571,9 +1414,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    Version.prototype._read = function() {
       this.p1 = this._io.readU1();
       this.minor = this._io.readU1();
       this.major = this._io.readU1();
@@ -1589,9 +1429,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    EncryptionInfoCommand.prototype._read = function() {
       this.cryptoff = this._io.readU4le();
       this.cryptsize = this._io.readU4le();
       this.cryptid = this._io.readU4le();
@@ -1609,9 +1446,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    CodeSignatureCommand.prototype._read = function() {
       this.dataOff = this._io.readU4le();
       this.dataSize = this._io.readU4le();
     }
@@ -1669,9 +1503,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    DyldInfoCommand.prototype._read = function() {
       this.rebaseOff = this._io.readU4le();
       this.rebaseSize = this._io.readU4le();
       this.bindOff = this._io.readU4le();
@@ -1690,9 +1521,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      BindItem.prototype._read = function() {
         this.opcodeAndImmediate = this._io.readU1();
         if ( ((this.opcode == MachO.DyldInfoCommand.BindOpcode.SET_DYLIB_ORDINAL_ULEB) || (this.opcode == MachO.DyldInfoCommand.BindOpcode.SET_APPEND_SLEB) || (this.opcode == MachO.DyldInfoCommand.BindOpcode.SET_SEGMENT_AND_OFFSET_ULEB) || (this.opcode == MachO.DyldInfoCommand.BindOpcode.ADD_ADDRESS_ULEB) || (this.opcode == MachO.DyldInfoCommand.BindOpcode.DO_BIND_ADD_ADDRESS_ULEB) || (this.opcode == MachO.DyldInfoCommand.BindOpcode.DO_BIND_ULEB_TIMES_SKIPPING_ULEB)) ) {
           this.uleb = new Uleb128(this._io, this, this._root);
@@ -1752,15 +1580,10 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      RebaseData.prototype._read = function() {
         this.items = []
-        var i = 0;
         do {
           var _ = new RebaseItem(this._io, this, this._root);
           this.items.push(_);
-          i++;
         } while (!(_.opcode == MachO.DyldInfoCommand.RebaseData.Opcode.DONE));
       }
 
@@ -1770,9 +1593,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        RebaseItem.prototype._read = function() {
           this.opcodeAndImmediate = this._io.readU1();
           if ( ((this.opcode == MachO.DyldInfoCommand.RebaseData.Opcode.SET_SEGMENT_AND_OFFSET_ULEB) || (this.opcode == MachO.DyldInfoCommand.RebaseData.Opcode.ADD_ADDRESS_ULEB) || (this.opcode == MachO.DyldInfoCommand.RebaseData.Opcode.DO_REBASE_ULEB_TIMES) || (this.opcode == MachO.DyldInfoCommand.RebaseData.Opcode.DO_REBASE_ADD_ADDRESS_ULEB) || (this.opcode == MachO.DyldInfoCommand.RebaseData.Opcode.DO_REBASE_ULEB_TIMES_SKIPPING_ULEB)) ) {
             this.uleb = new Uleb128(this._io, this, this._root);
@@ -1810,9 +1630,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      ExportNode.prototype._read = function() {
         this.terminalSize = new Uleb128(this._io, this, this._root);
         this.childrenCount = this._io.readU1();
         this.children = new Array(this.childrenCount);
@@ -1828,9 +1645,6 @@ var MachO = (function() {
           this._parent = _parent;
           this._root = _root || this;
 
-          this._read();
-        }
-        Child.prototype._read = function() {
           this.name = KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, true), "ascii");
           this.nodeOffset = new Uleb128(this._io, this, this._root);
         }
@@ -1858,15 +1672,10 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      BindData.prototype._read = function() {
         this.items = []
-        var i = 0;
         do {
           var _ = new BindItem(this._io, this, this._root);
           this.items.push(_);
-          i++;
         } while (!(_.opcode == MachO.DyldInfoCommand.BindOpcode.DONE));
       }
 
@@ -1879,14 +1688,9 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      LazyBindData.prototype._read = function() {
         this.items = [];
-        var i = 0;
         while (!this._io.isEof()) {
           this.items.push(new BindItem(this._io, this, this._root));
-          i++;
         }
       }
 
@@ -1958,9 +1762,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    DylinkerCommand.prototype._read = function() {
       this.name = new LcStr(this._io, this, this._root);
     }
 
@@ -1973,9 +1774,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    DylibCommand.prototype._read = function() {
       this.nameOffset = this._io.readU4le();
       this.timestamp = this._io.readU4le();
       this.currentVersion = this._io.readU4le();
@@ -1986,15 +1784,312 @@ var MachO = (function() {
     return DylibCommand;
   })();
 
+  var SegmentCommand = MachO.SegmentCommand = (function() {
+    function SegmentCommand(_io, _parent, _root) {
+      this._io = _io;
+      this._parent = _parent;
+      this._root = _root || this;
+
+      this.segname = KaitaiStream.bytesToStr(KaitaiStream.bytesStripRight(this._io.readBytes(16), 0), "ascii");
+      this.vmaddr = this._io.readU4le();
+      this.vmsize = this._io.readU4le();
+      this.fileoff = this._io.readU4le();
+      this.filesize = this._io.readU4le();
+      this.maxprot = new VmProt(this._io, this, this._root);
+      this.initprot = new VmProt(this._io, this, this._root);
+      this.nsects = this._io.readU4le();
+      this.flags = this._io.readU4le();
+      this.sections = new Array(this.nsects);
+      for (var i = 0; i < this.nsects; i++) {
+        this.sections[i] = new Section(this._io, this, this._root);
+      }
+    }
+
+    var Section = SegmentCommand.Section = (function() {
+      function Section(_io, _parent, _root) {
+        this._io = _io;
+        this._parent = _parent;
+        this._root = _root || this;
+
+        this.sectName = KaitaiStream.bytesToStr(KaitaiStream.bytesStripRight(this._io.readBytes(16), 0), "ascii");
+        this.segName = KaitaiStream.bytesToStr(KaitaiStream.bytesStripRight(this._io.readBytes(16), 0), "ascii");
+        this.addr = this._io.readU4le();
+        this.size = this._io.readU4le();
+        this.offset = this._io.readU4le();
+        this.align = this._io.readU4le();
+        this.reloff = this._io.readU4le();
+        this.nreloc = this._io.readU4le();
+        this.flags = this._io.readU4le();
+        this.reserved1 = this._io.readU4le();
+        this.reserved2 = this._io.readU4le();
+        this.reserved3 = this._io.readU4le();
+      }
+
+      var CfStringList = Section.CfStringList = (function() {
+        function CfStringList(_io, _parent, _root) {
+          this._io = _io;
+          this._parent = _parent;
+          this._root = _root || this;
+
+          this.items = [];
+          while (!this._io.isEof()) {
+            this.items.push(new CfString(this._io, this, this._root));
+          }
+        }
+
+        return CfStringList;
+      })();
+
+      var CfString = Section.CfString = (function() {
+        function CfString(_io, _parent, _root) {
+          this._io = _io;
+          this._parent = _parent;
+          this._root = _root || this;
+
+          this.isa = this._io.readU8le();
+          this.info = this._io.readU8le();
+          this.data = this._io.readU8le();
+          this.length = this._io.readU8le();
+        }
+
+        return CfString;
+      })();
+
+      var EhFrameItem = Section.EhFrameItem = (function() {
+        function EhFrameItem(_io, _parent, _root) {
+          this._io = _io;
+          this._parent = _parent;
+          this._root = _root || this;
+
+          this.length = this._io.readU4le();
+          if (this.length == 4294967295) {
+            this.length64 = this._io.readU8le();
+          }
+          this.id = this._io.readU4le();
+          if (this.length > 0) {
+            switch (this.id) {
+            case 0:
+              this._raw_body = this._io.readBytes((this.length - 4));
+              var _io__raw_body = new KaitaiStream(this._raw_body);
+              this.body = new Cie(_io__raw_body, this, this._root);
+              break;
+            default:
+              this.body = this._io.readBytes((this.length - 4));
+              break;
+            }
+          }
+        }
+
+        var CharChain = EhFrameItem.CharChain = (function() {
+          function CharChain(_io, _parent, _root) {
+            this._io = _io;
+            this._parent = _parent;
+            this._root = _root || this;
+
+            this.chr = this._io.readU1();
+            if (this.chr != 0) {
+              this.next = new CharChain(this._io, this, this._root);
+            }
+          }
+
+          return CharChain;
+        })();
+
+        var Cie = EhFrameItem.Cie = (function() {
+          function Cie(_io, _parent, _root) {
+            this._io = _io;
+            this._parent = _parent;
+            this._root = _root || this;
+
+            this.version = this._io.readU1();
+            this.augStr = new CharChain(this._io, this, this._root);
+            this.codeAlignmentFactor = new Uleb128(this._io, this, this._root);
+            this.dataAlignmentFactor = new Uleb128(this._io, this, this._root);
+            this.returnAddressRegister = this._io.readU1();
+            if (this.augStr.chr == 122) {
+              this.augmentation = new AugmentationEntry(this._io, this, this._root);
+            }
+          }
+
+          return Cie;
+        })();
+
+        var AugmentationEntry = EhFrameItem.AugmentationEntry = (function() {
+          function AugmentationEntry(_io, _parent, _root) {
+            this._io = _io;
+            this._parent = _parent;
+            this._root = _root || this;
+
+            this.length = new Uleb128(this._io, this, this._root);
+            if (this._parent.augStr.next.chr == 82) {
+              this.fdePointerEncoding = this._io.readU1();
+            }
+          }
+
+          return AugmentationEntry;
+        })();
+
+        return EhFrameItem;
+      })();
+
+      var EhFrame = Section.EhFrame = (function() {
+        function EhFrame(_io, _parent, _root) {
+          this._io = _io;
+          this._parent = _parent;
+          this._root = _root || this;
+
+          this.items = [];
+          while (!this._io.isEof()) {
+            this.items.push(new EhFrameItem(this._io, this, this._root));
+          }
+        }
+
+        return EhFrame;
+      })();
+
+      var PointerList = Section.PointerList = (function() {
+        function PointerList(_io, _parent, _root) {
+          this._io = _io;
+          this._parent = _parent;
+          this._root = _root || this;
+
+          this.items = [];
+          while (!this._io.isEof()) {
+            this.items.push(this._io.readU8le());
+          }
+        }
+
+        return PointerList;
+      })();
+
+      var StringList = Section.StringList = (function() {
+        function StringList(_io, _parent, _root) {
+          this._io = _io;
+          this._parent = _parent;
+          this._root = _root || this;
+
+          this.strings = [];
+          while (!this._io.isEof()) {
+            this.strings.push(KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, true), "ascii"));
+          }
+        }
+
+        return StringList;
+      })();
+      Object.defineProperty(Section.prototype, 'data', {
+        get: function() {
+          if (this._m_data !== undefined)
+            return this._m_data;
+          var io = this._root._io;
+          var _pos = io.pos;
+          io.seek(this.offset);
+          switch (this.sectName) {
+          case "__objc_nlclslist":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_methname":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new StringList(_io__raw__m_data, this, this._root);
+            break;
+          case "__nl_symbol_ptr":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__la_symbol_ptr":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_selrefs":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__cstring":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new StringList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_classlist":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_protolist":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_imageinfo":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_methtype":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new StringList(_io__raw__m_data, this, this._root);
+            break;
+          case "__cfstring":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new CfStringList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_classrefs":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_protorefs":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_classname":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new StringList(_io__raw__m_data, this, this._root);
+            break;
+          case "__got":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          case "__eh_frame":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new EhFrame(_io__raw__m_data, this, this._root);
+            break;
+          case "__objc_superrefs":
+            this._raw__m_data = io.readBytes(this.size);
+            var _io__raw__m_data = new KaitaiStream(this._raw__m_data);
+            this._m_data = new PointerList(_io__raw__m_data, this, this._root);
+            break;
+          default:
+            this._m_data = io.readBytes(this.size);
+            break;
+          }
+          io.seek(_pos);
+          return this._m_data;
+        }
+      });
+
+      return Section;
+    })();
+
+    return SegmentCommand;
+  })();
+
   var LcStr = MachO.LcStr = (function() {
     function LcStr(_io, _parent, _root) {
       this._io = _io;
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    LcStr.prototype._read = function() {
       this.length = this._io.readU4le();
       this.value = KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, true), "UTF-8");
     }
@@ -2008,9 +2103,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    LoadCommand.prototype._read = function() {
       this.type = this._io.readU4le();
       this.size = this._io.readU4le();
       switch (this.type) {
@@ -2174,6 +2266,11 @@ var MachO = (function() {
         var _io__raw_body = new KaitaiStream(this._raw_body);
         this.body = new SubCommand(_io__raw_body, this, this._root);
         break;
+      case MachO.LoadCommandType.SEGMENT:
+        this._raw_body = this._io.readBytes((this.size - 8));
+        var _io__raw_body = new KaitaiStream(this._raw_body);
+        this.body = new SegmentCommand(_io__raw_body, this, this._root);
+        break;
       case MachO.LoadCommandType.ROUTINES:
         this._raw_body = this._io.readBytes((this.size - 8));
         var _io__raw_body = new KaitaiStream(this._raw_body);
@@ -2199,11 +2296,6 @@ var MachO = (function() {
         var _io__raw_body = new KaitaiStream(this._raw_body);
         this.body = new SegmentCommand64(_io__raw_body, this, this._root);
         break;
-      case MachO.LoadCommandType.SEGMENT:
-        this._raw_body = this._io.readBytes((this.size - 8));
-        var _io__raw_body = new KaitaiStream(this._raw_body);
-        this.body = new SegmentCommand(_io__raw_body, this, this._root);
-        break;
       case MachO.LoadCommandType.ID_DYLIB:
         this._raw_body = this._io.readBytes((this.size - 8));
         var _io__raw_body = new KaitaiStream(this._raw_body);
@@ -2224,9 +2316,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    UuidCommand.prototype._read = function() {
       this.uuid = this._io.readBytes(16);
     }
 
@@ -2239,9 +2328,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    SymtabCommand.prototype._read = function() {
       this.symOff = this._io.readU4le();
       this.nSyms = this._io.readU4le();
       this.strOff = this._io.readU4le();
@@ -2254,16 +2340,11 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      StrTable.prototype._read = function() {
         this.unknown = this._io.readU4le();
         this.items = []
-        var i = 0;
         do {
           var _ = KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, true), "ascii");
           this.items.push(_);
-          i++;
         } while (!(_ == ""));
       }
 
@@ -2276,9 +2357,6 @@ var MachO = (function() {
         this._parent = _parent;
         this._root = _root || this;
 
-        this._read();
-      }
-      Nlist64.prototype._read = function() {
         this.un = this._io.readU4le();
         this.type = this._io.readU1();
         this.sect = this._io.readU1();
@@ -2327,9 +2405,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    VersionMinCommand.prototype._read = function() {
       this.version = new Version(this._io, this, this._root);
       this.sdk = new Version(this._io, this, this._root);
     }
@@ -2343,9 +2418,6 @@ var MachO = (function() {
       this._parent = _parent;
       this._root = _root || this;
 
-      this._read();
-    }
-    EntryPointCommand.prototype._read = function() {
       this.entryOff = this._io.readU8le();
       this.stackSize = this._io.readU8le();
     }
@@ -2355,5 +2427,15 @@ var MachO = (function() {
 
   return MachO;
 })();
-return MachO;
-}));
+
+// Export for amd environments
+if (typeof define === 'function' && define.amd) {
+  define('MachO', [], function() {
+    return MachO;
+  });
+}
+
+// Export for CommonJS
+if (typeof module === 'object' && module && module.exports) {
+  module.exports = MachO;
+}
