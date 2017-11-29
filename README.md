@@ -1,6 +1,8 @@
 # Binary Entropy Visualizer
 
-Online x86 binary visualizer for comparing two binaries side-by-side and understanding the entropy between them.
+Completely self-contained binary ROP/JOP gadget analyzer for comparing two binaries
+side-by-side and understanding their structures. Focussed on extreme simplicity of usage,
+and portability across platforms.
 
 # Get Started:
 Visit the Github pages hosted version here: https://polyverse.github.io/binary-entropy-visualizer/#
@@ -9,14 +11,14 @@ Or clone this repo, and start index.html! This app is 100% in-browser,
 so no makefiles, no builders, no package managers, no setup scripts, no platforms,
 no frameworks, no dependencies, no nothing.
 
-[Note] Occasionally your browser might not like loading scripts from the filesystem,
+[Note] Occasionally your browser might not like loading scripts from the filesystem due to CORS,
 in which case host this directory behind a static webserver. Hacker-y folks might
 be used to:
 ```
 python -m SimpleHTTPServer
 ```
 
-# Intended for offline use
+# Intended for extreme simplicity and isolated use
 
 This repo intentionally clones/copies every single JS dependency. This means that you can
 run the index.html completely offline, internet-disconnected and do some cool analyzing.

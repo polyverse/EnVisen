@@ -80,6 +80,10 @@ types:
         0x1a8: sh5
         0x1c2: thumb
         0x169: wcemipsv2
+      characteristics:
+        0x1: no_relocations
+        0x2: executable_image
+        0x2000: dynamic_link_library
   optional_header:
     seq:
       - id: std

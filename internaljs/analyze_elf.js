@@ -1,5 +1,5 @@
 function analyzeElf(dataArray, options, elfElem, reporter) {
-    var ks = new KaitaiStream(dataArray, 0)
+    const ks = new KaitaiStream(dataArray, 0)
     const elf = new Elf(ks)
     reporter.updateStatus('Analysing Elf data...');
 
@@ -88,8 +88,8 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
 
     var rows = [];
     for (let shi in elf.header.sectionHeaders) {
-      var sh = elf.header.sectionHeaders[shi];
-      var shlstr = '<tr>' +
+      const sh = elf.header.sectionHeaders[shi];
+      const shlstr = '<tr>' +
         '<td>' + sh.name + '</td>' +
         '<td>' + Elf.ShType[sh.type] + '</td>' +
         '<td>' + sh.flags + interpretFlags(sh.flags, Elf.ShFlags) + '</td>' +
