@@ -5,7 +5,7 @@ side-by-side and understanding their structures. Focussed on extreme simplicity 
 and portability across platforms.
 
 # Get Started:
-Visit the Github pages hosted version here: https://polyverse.github.io/binary-entropy-visualizer/#
+Visit the Github pages hosted version here: https://analyze.polyverse.io/#
 
 Or clone this repo, and start index.html! This app is 100% in-browser,
 so no makefiles, no builders, no package managers, no setup scripts, no platforms,
