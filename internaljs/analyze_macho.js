@@ -7,7 +7,7 @@ function analyzeMachO(dataArray, options,  machoElem, reporter) {
 
         machoElem.append(
         '<span><i>Magic</i>: <b>' + MachO.MagicType[macho.magic] +
-        '<span><i>File</i>: <b>' + MachO.FileType[macho.header.filetype] +
+        '</b>, <span><i>File</i>: <b>' + MachO.FileType[macho.header.filetype] +
         '</b>, <i>CPU</i>: <b>' + MachO.CpuType[macho.header.cputype] +
         '</b>, <i>CPU Subtype</i>: <b>' + macho.header.cpusubtype +
         '</b>, <i>Flags</i>: <b>' + macho.header.flags + ' (' + interpretFlags(macho.header.flags, MachO.MachoFlags) + ')' +
@@ -57,31 +57,36 @@ function analyzeMachO(dataArray, options,  machoElem, reporter) {
 
         var sections = [];
 
-        /*
-        for (var phi in elf.header.programHeaders) {
-          var ph = elf.header.programHeaders[phi];
-          if (ph.flags & Elf.PhFlags["PF_X"]){
+        for (let lci in macho.loadCommands) {
+          const lc = macho.loadCommands[lci];
+          if (lc.type == MachO.LoadCommandType["SEGMENT"] || lc.type == MachO.LoadCommandType["SEGMENT_64"]) {
 
-            try {
-              const bodyContents = ph.body;
-              var section = {
-                offset: ph.offset,
-                size: ph.memsz,
-                vaddr: ph.vaddr,
-                opcodes: bodyContents,
-              };
-              sections.push(section);
-            } catch (e) {
-                reporter.updateStatus("Skipping section " + phi + " due to exception: " + e);
-            }
-          }
-        }*/
+            for (let secti in lc.body.sections) {
+              const sect = lc.body.sections[secti];
+              if (sect.flags & MachO.SectionFlags["S_ATTR_SOME_INSTRUCTIONS"] ||
+                sect.flags & MachO.SectionFlags["S_ATTR_PURE_INSTRUCTIONS"]) {
+                try {
+                  const bodyContents = sect.data;
+                  var section = {
+                    name: sect.sectName,
+                    offset: sect.offset,
+                    size: sect.size,
+                    vaddr: sect.addr,
+                    opcodes: bodyContents,
+                  };
+                  sections.push(section);
+                } catch (e) {
+                    reporter.updateStatus("Skipping section " + secti + " due to exception: " + e);
+                }
+
+              } //end: if - flags
+            } //end: for - sections
+          } // end: if - segment/segment64
+        } //end: for - loadcommands
 
 
     return [sections, options];
 }
-
-
 
 function setMachODefaults(options, macho) {
   if (options.arch == "auto detect") {
@@ -100,13 +105,39 @@ function setMachODefaults(options, macho) {
 }
 
 function machoToArch(macho) {
-  return "x86";
+  switch (macho.magic) {
+    case MachO.MagicType["MACHO_LE_X86"]:
+    case MachO.MagicType["MACHO_LE_X64"]:
+    case MachO.MagicType["MACHO_BE_X86"]:
+    case MachO.MagicType["MACHO_BE_X64"]:
+      return "x86";
+    default:
+      return "unknown";
+  }
 }
 
 function machoToBits(macho) {
-  return "64";
+  switch (macho.magic) {
+    case MachO.MagicType["MACHO_LE_X86"]:
+    case MachO.MagicType["MACHO_BE_X86"]:
+      return "32";
+    case MachO.MagicType["MACHO_LE_X64"]:
+    case MachO.MagicType["MACHO_BE_X64"]:
+      return "64";
+    default:
+      return "unknown";
+  }
 }
 
 function machoToEndian(macho) {
-  return "little";
+  switch (macho.magic) {
+    case MachO.MagicType["MACHO_LE_X86"]:
+    case MachO.MagicType["MACHO_LE_X64"]:
+      return "little";
+    case MachO.MagicType["MACHO_BE_X86"]:
+    case MachO.MagicType["MACHO_BE_X64"]:
+      return "big";
+    default:
+      return "unknown";
+  }
 }

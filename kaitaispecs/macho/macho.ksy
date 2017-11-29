@@ -138,6 +138,9 @@ enums:
     0x800000 : has_tlv_descriptors
     0x1000000: no_heap_execution
     0x2000000: app_extension_safe
+  section_flags:
+    0x00000400: s_attr_some_instructions
+    0x80000000: s_attr_pure_instructions
 types:
   mach_header:
     seq:

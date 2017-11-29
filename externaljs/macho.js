@@ -177,6 +177,14 @@ var MachO = (function() {
     4277009103: "MACHO_BE_X64",
   });
 
+  MachO.SectionFlags = Object.freeze({
+    S_ATTR_SOME_INSTRUCTIONS: 1024,
+    S_ATTR_PURE_INSTRUCTIONS: 2147483648,
+
+    1024: "S_ATTR_SOME_INSTRUCTIONS",
+    2147483648: "S_ATTR_PURE_INSTRUCTIONS",
+  });
+
   MachO.FileType = Object.freeze({
     OBJECT: 1,
     EXECUTE: 2,
