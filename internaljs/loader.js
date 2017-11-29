@@ -18,7 +18,7 @@ function attachVisualizer(domElem, index) {
     '<div class="file-collector" id="file-collector' + index + '">' +
       '<div class="file-title" id="file-title' + index + '">'+title+'</div>' +
       '<p>Select a file or drag/drop a file on the selector  ' +
-      'below to begin analysis. Provide any 32/64 bit ELF binary across x86/ARM/Sparc/MIPS/PowerPC' +
+      'below to begin analysis. Provide any 32/64 bit ELF binary across x86/ARM/Sparc/MIPS/PowerPC ' +
       'to get generate a ROP gadget table from it (savable as JSON). '+
       'You may also provide a saved ROP JSON to avoid reparsing the same binary.</p></br>' +
       '<table><tr><td>' +

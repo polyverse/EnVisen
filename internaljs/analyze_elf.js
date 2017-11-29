@@ -1,33 +1,9 @@
 function analyzeElf(dataArray, options, elfElem, reporter) {
     var ks = new KaitaiStream(dataArray, 0)
-    elf = new Elf(ks)
+    const elf = new Elf(ks)
     reporter.updateStatus('Analysing Elf data...');
 
-    options = setDefaults(options, elf);
-
-    function interpretFlags(flags, consts) {
-      var fstr = '';
-      var first = true;
-
-      for (key in consts) {
-        if (flags & key) {
-
-          if (first) {
-            first = false;
-          } else {
-            fstr = fstr + ' | ';
-          }
-
-          fstr = fstr + consts[key];
-        }
-      }
-
-      if (fstr != '') {
-        fstr = '(' + fstr + ')';
-      }
-      return fstr
-    }
-
+    options = setElfDefaults(options, elf);
 
     elfElem.append(
     '<span><i>Type</i>: <b>' + Elf.ObjType[elf.header.eType] +
@@ -69,9 +45,9 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     progHeadersTable.append(tbody);
 
     var rows = [];
-    for (phi in elf.header.programHeaders) {
-      var ph = elf.header.programHeaders[phi];
-      var phlstr = '<tr>' +
+    for (let phi in elf.header.programHeaders) {
+      const ph = elf.header.programHeaders[phi];
+      const phlstr = '<tr>' +
       '<td>' + ph.type + " (" + Elf.PhType[ph.type] + ')</td>' +
       '<td>' + ph.flags + interpretFlags(ph.flags, Elf.PhFlags) + '</td>' +
       '<td>' + ph.offset + '</td>' +
@@ -111,7 +87,7 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     sectionHeadersTable.append(tbody);
 
     var rows = [];
-    for (shi in elf.header.sectionHeaders) {
+    for (let shi in elf.header.sectionHeaders) {
       var sh = elf.header.sectionHeaders[shi];
       var shlstr = '<tr>' +
         '<td>' + sh.name + '</td>' +
@@ -157,7 +133,7 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     return [sections, options];
 }
 
-function setDefaults(options, elf) {
+function setElfDefaults(options, elf) {
   if (options.arch == "auto detect") {
     options.arch = elfToArch(elf);
   }

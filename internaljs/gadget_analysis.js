@@ -259,3 +259,26 @@ function applyOffset(gadgets, offset) {
     };
   });
 }
+
+function interpretFlags(flags, consts) {
+  var fstr = '';
+  var first = true;
+
+  for (key in consts) {
+    if (flags & key) {
+
+      if (first) {
+        first = false;
+      } else {
+        fstr = fstr + ' | ';
+      }
+
+      fstr = fstr + consts[key];
+    }
+  }
+
+  if (fstr != '') {
+    fstr = '(' + fstr + ')';
+  }
+  return fstr
+}
