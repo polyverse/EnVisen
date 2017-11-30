@@ -1,15 +1,12 @@
 # Binary Entropy Visualizer
 
 Completely self-contained binary ROP/JOP gadget analyzer for comparing two binaries
-side-by-side and understanding their structures. Focussed on extreme simplicity of usage,
-and portability across platforms.
+side-by-side and understanding their structures, in 100% pure Javascript, and a self-contained client-side browser application. Focussed on extreme simplicity of usage and portability across platforms.
 
 # Get Started:
-Visit the Github pages hosted version here: https://analyze.polyverse.io/
+Visit the hosted version here: https://analyze.polyverse.io/
 
-Or clone this repo, and start index.html! This app is 100% in-browser,
-so no makefiles, no builders, no package managers, no setup scripts, no platforms,
-no frameworks, no dependencies, no nothing.
+Or clone this repo, and open index.html in your web-browser locally.
 
 [Note] Occasionally your browser might not like loading scripts from the filesystem due to CORS,
 in which case host this directory behind a static webserver. Hacker-y folks might
@@ -20,18 +17,12 @@ python -m SimpleHTTPServer
 
 # Intended for extreme simplicity and isolated use
 
-This repo intentionally clones/copies every single JS dependency. This means that you can
-run the index.html completely offline, internet-disconnected and do some cool analyzing.
-
-It gives you some assurances for paranoid people:
 * Run on a sandboxed/airgapped host to be assured there is no phone-home.
-* Be aware of every dependency.
-* Run in VMs easily without proxies and hosts and ports and NATs.
-* xcopy deploy!
+* Requires no scripts/frameworks. Pure xcopy-deploy.
 
 # Resources:
 * jQuery to tie everything together! https://jquery.com/
-* Elf expansion is provided by: https://github.com/kaitai-io and the Elf Javascript template: http://formats.kaitai.io/elf/javascript.html
+* Elf, MachO and PE expansion is provided by: https://github.com/kaitai-io (some templates have been customized.)
 * Disassemly provided by Capstone.js: https://github.com/AlexAltea/capstone.js
 * ROP-analysis code ported from: https://github.com/JonathanSalwan/ROPgadget
 * Clusterize for showing LARGE tables fast! https://clusterize.js.org/
