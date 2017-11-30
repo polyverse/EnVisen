@@ -22,7 +22,7 @@
 }
 
 .footer {
-  font-size: 50%;
+  font-size: 70%;
   display: block;
 }
 
@@ -101,4 +101,9 @@ tr:nth-of-type(even) {
 
 .gadget-filter {
   font-size: 70%;
+}
+
+.warning {
+  font-style: italic;
+  color: red;
 }

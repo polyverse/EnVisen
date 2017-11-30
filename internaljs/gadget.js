@@ -1,3 +1,4 @@
+// Adapted from https://github.com/JonathanSalwan/ROPgadget/blob/master/ropgadget/gadgets.py
 
 self.importScripts("../externaljs/capstone.min.js");
 
