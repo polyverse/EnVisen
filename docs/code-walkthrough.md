@@ -160,10 +160,12 @@ of gadgets that survived and moved, using a css class.
 To enable this, you provide it with an additional struct called
 gadgetsHash, of the form:
 
+```
 {
   "gadget 1 contents": [addr1, addr2, ...],
   "gadget 2 contents": [addr1, addr2, ...],
 }
+```
 
 This hash table maps each gadget to all the addresses it was found in previously.
 If you don't provide one, no row tagging is performed.
