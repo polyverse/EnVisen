@@ -85,7 +85,7 @@ function analyzeMachO(dataArray, options,  machoElem, reporter) {
     } //end: for - loadcommands
 
 
-    return [sections, options];
+    return [sections, [], options];
 }
 
 function setMachODefaults(options, macho) {

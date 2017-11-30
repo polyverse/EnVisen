@@ -16,5 +16,5 @@ function analyzeRaw(dataArray, options, peElem, reporter) {
 
 
   reporter.updateStatus('RAW analysis not yet supported! Giving up!');
-  return [[section], options];
+  return [[section], [], options];
 }

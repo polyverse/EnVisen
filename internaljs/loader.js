@@ -14,13 +14,16 @@ function attachVisualizer(domElem, index) {
     const rootElem = $(domElem)
     const title = rootElem.data("title");
 
+    const fileHelpText = '<p>Select a file or drag/drop a file on the selector  ' +
+    'below to begin analysis.</p>' +
+    '<p>Provide any 32/64 bit ELF/MachO/PE binary across x86/ARM/Sparc/MIPS/PowerPC ' +
+    'to get generate a ROP gadget table from it (savable as JSON). ' +
+    'You may also provide a saved ROP JSON to avoid reparsing the same binary.</p>';
+
     const visualizerHtml =
     '<div class="file-collector" id="file-collector' + index + '">' +
-      '<div class="file-title" id="file-title' + index + '">'+title+'</div>' +
-      '<p>Select a file or drag/drop a file on the selector  ' +
-      'below to begin analysis. Provide any 32/64 bit ELF/MachO/PE binary across x86/ARM/Sparc/MIPS/PowerPC ' +
-      'to get generate a ROP gadget table from it (savable as JSON). '+
-      'You may also provide a saved ROP JSON to avoid reparsing the same binary.</p></br>' +
+      '<span class="file-title" id="file-title' + index + '">'+title+'</span>' +
+      getHelpButton(fileHelpText) + '</br>' +
       '<table><tr><td>' +
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
@@ -34,18 +37,22 @@ function attachVisualizer(domElem, index) {
         '<option>PPC</option>' +
         '<option>SPARC</option>' +
         '<option>Thumb</option>' +
-        '</select><br/>' +
+        '</select>' +
+        getHelpButton('The architecture to disassemble for. Must not be auto detect for RAW binaries.') + '<br/>' +
       '<span>Bits:</span><select id="bits' + index + '" value="0">' +
         '<option>Auto Detect</option>' +
         '<option>32</option>' +
         '<option>64</option>' +
-        '</select><br/>' +
+        '</select>' +
+        getHelpButton('The bit length to disassemble with. Must not be auto detect for RAW binaries.')  + '<br/>' +
       '<span>Endian:</span><select id="endian' + index + '" value="0">' +
         '<option>Auto Detect</option>' +
         '<option>Little</option>' +
         '<option>Big</option>' +
-        '</select><br/>' +
-      '<span>Base Offset:</span><input type="text" id="base_offset' + index + '" value="0"></input><br/>' +
+        '</select>' +
+        getHelpButton('The word layout to disassemble with. Must not be auto detect for RAW binaries.')  + '<br/>' +
+      '<span>Base Offset:</span><input type="text" id="base_offset' + index + '" value="0"></input>' +
+      getHelpButton('Hexadecimal integer that will offset all instructions and symbols (simulate ASLR).')  + '<br/>' +
       '</td></tr></table>' +
     '</div>' +
 
@@ -76,7 +83,7 @@ function attachVisualizer(domElem, index) {
 
     if (index > 0) {
       $('#file-collector'+index).block({
-        message: '<h1>Analyze the first file to unblock comparison.</h1>',
+        message: '<span class="blocked">Analyze the first file to unblock comparison.</span>',
         css: { border: '1px solid blue', cursor: 'not-allowed' },
         overlayCSS:  { opacity:         0.2, cursor: 'not-allowed' }
       });
@@ -226,4 +233,8 @@ function getFileProcessor(index) {
         fileElem.append('<strong>' + escape(f.name) + '</strong>');
         reader.readAsArrayBuffer(f);
     }
+}
+
+function getHelpButton(text) {
+  return '&nbsp;<div class="tooltip">&nbsp;&quest;&nbsp;<span class="tooltiptext">' + text + '</span></div>';
 }

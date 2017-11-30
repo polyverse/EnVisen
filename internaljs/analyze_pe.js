@@ -94,7 +94,7 @@ function analyzePe(dataArray, options, peElem, reporter) {
       } //end: if - characteristics
   } //end: for - sections
 
-  return [sections, options];
+  return [sections, [], options];
 }
 
 

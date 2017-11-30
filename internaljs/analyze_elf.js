@@ -130,7 +130,7 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
       }
     }
 
-    return [sections, options];
+    return [sections, [], options];
 }
 
 function setElfDefaults(options, elf) {

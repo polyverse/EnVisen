@@ -18,7 +18,7 @@
 .file-collector {
     padding: 10px;
     border: 1px solid #ccc;
-    width: fit-content;
+    width: 100%;
 }
 
 .footer {
@@ -106,4 +106,39 @@ tr:nth-of-type(even) {
 .warning {
   font-style: italic;
   color: red;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px solid black;
+    background-color: #CDD0DF;
+    color: #1a2c75;
+    font-size: 50%;
+    vertical-align: top;
+    border-radius: 2px;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: #E2EDF4;
+    color: #3a3b40;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    font-family: Open Sans, sans-serif;
+
+    width: 200px;
+    font-size: 150%;
+
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
 }

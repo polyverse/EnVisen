@@ -7,10 +7,13 @@ self.importScripts("../externaljs/capstone.min.js");
    const arch = resolveArch(e.data.arch);
    const mode = resolveMode(arch, e.data.bits, e.data.endian, e.data.thumb);
    const gadgets = getAllGadgets(e.data.sections, arch, mode);
-   postMessage({status: "Found gadgets", gadgets: gadgets});
+   const chains = getAllChains(e.data.sections, arch, mode);
+   postMessage({status: "Returning to main thread " + gadgets.length +
+    "gadgets, and " + chains.length + " chains.", gadgets: gadgets});
    close();
  }
 
+/************************* Basic helpers ****************************************************/
 function resolveArch(archstr) {
   if (archstr == "x86") {
     return cs.ARCH_X86;
@@ -84,7 +87,12 @@ function attachEndianToMode(mode, endian) {
   return mode;
 }
 
-function  getAllGadgets(sections, arch, mode) {
+
+
+/************************* Gadget Finding ****************************************************/
+
+
+function getAllGadgets(sections, arch, mode) {
   let gadgets = [];
 
   for (si in sections) {
@@ -482,4 +490,12 @@ function stripGadgets(gadgets) {
   }
 
   return strippedGadgets;
+}
+
+
+/************************* Chain Finding ****************************************************/
+
+function getAllChains(gadgets, arch, mode) {
+  let chains = [];
+  return chains;
 }
