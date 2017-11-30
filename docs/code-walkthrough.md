@@ -33,7 +33,7 @@ There is no redirection, indirection or routing performed. This is a
 
 ### Rendering the UI
 * When index.html is loaded, in the document.load event in loader.js,
-all &le;div&gt; elements are searched having a class if `binaryVisualizer`.
+all &lt;div&gt; elements are searched having a class if `binaryVisualizer`.
 
 * Each of these elements is then filled up programmatically with the file upload
 dialog, and much more.
