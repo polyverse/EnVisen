@@ -1,3 +1,6 @@
+⚠️ This tool may only be used for educational, teaching, learning,
+understanding and research purposes only.
+
 # Binary Entropy Visualizer
 
 Completely self-contained binary ROP/JOP gadget analyzer for comparing two binaries
@@ -5,6 +8,8 @@ side-by-side and understanding their structures, in 100% pure Javascript, and a 
 
 # Get Started:
 Visit the hosted version here: https://analyze.polyverse.io/
+
+## Self hosting
 
 Or clone this repo, and open index.html in your web-browser locally.
 
@@ -14,6 +19,10 @@ be used to:
 ```
 python -m SimpleHTTPServer
 ```
+
+# Code Walkthrough, API, and Programmatic use
+
+See [detailed code walkthrough](/docs/code-walkthrough.md) page.
 
 # Intended for extreme simplicity and isolated use
 
