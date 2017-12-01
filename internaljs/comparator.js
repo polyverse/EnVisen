@@ -1,5 +1,3 @@
-$(document).ready(attachComparators);
-
 function attachComparators() {
 
   $("#comparator-root").block({

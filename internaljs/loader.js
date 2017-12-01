@@ -1,5 +1,4 @@
 
-$(document).ready(attachVisualizers);
 
 function attachVisualizers() {
     const divs = $('div.binaryVisualizer');

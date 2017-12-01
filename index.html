@@ -18,24 +18,37 @@
 
     <link rel="stylesheet" type="text/css"  href="internalcss/visualizer.css"/>
 
-    <script type="text/javascript" src="externaljs/jquery.js"></script>
-    <script type="text/javascript" src="externaljs/jquery.blockui.js"></script>
-    <script type="text/javascript" src="externaljs/elf.js"></script>
-    <script type="text/javascript" src="externaljs/pe.js"></script>
-    <script type="text/javascript" src="externaljs/macho.js"></script>
-    <script type="text/javascript" src="externaljs/tinyprogressbar.js"></script>
-    <script type="text/javascript" src="externaljs/clusterize.js"></script>
-    <script type="text/javascript" src="externaljs/blob.js"></script>
-    <script type="text/javascript" src="externaljs/filesaver.js"></script>
-    <script type="text/javascript" src="externaljs/capstone.min.js"></script>
+    <script type="text/javascript" src="externaljs/head.load.min.js"></script>
+    <script type="text/javascript">
+      head.load([
+        "externaljs/jquery.js",
+        "externaljs/jquery.blockui.js",
+        "externaljs/elf.js",
+        "externaljs/pe.js",
+        "externaljs/macho.js",
+        "externaljs/tinyprogressbar.js",
+        "externaljs/clusterize.js",
+        "externaljs/blob.js",
+        "externaljs/filesaver.js",
+        "externaljs/capstone.min.js",
 
-    <script type="text/javascript" src="internaljs/analyze_elf.js"></script>
-    <script type="text/javascript" src="internaljs/analyze_pe.js"></script>
-    <script type="text/javascript" src="internaljs/analyze_macho.js"></script>
-    <script type="text/javascript" src="internaljs/analyze_raw.js"></script>
-    <script type="text/javascript" src="internaljs/loader.js"></script>
-    <script type="text/javascript" src="internaljs/comparator.js"></script>
-    <script type="text/javascript" src="internaljs/gadget_analysis.js"></script>
+        "internaljs/analyze_elf.js",
+        "internaljs/analyze_pe.js",
+        "internaljs/analyze_macho.js",
+        "internaljs/analyze_raw.js",
+        "internaljs/loader.js",
+        "internaljs/comparator.js",
+        "internaljs/gadget_analysis.js"
+      ],
+
+      function() {
+        $(".beforeLoad").toggle();
+        $(".afterLoad").toggle();
+        attachVisualizers();
+        attachComparators();
+      }
+    );
+    </script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-65028710-7"></script>
@@ -47,68 +60,70 @@
       gtag('config', 'UA-65028710-7');
     </script>
 </head>
+
 <body>
     <center><h4>EnVizen: ROP Entropy Visualizer</h4></center>
     <center><div class="warning">To be used solely for educational and research purposes.</div></center>
-    <div>
-      <div class="left">
-        <div class="binaryVisualizer" data-title="Base File"></div>
-      </div>
-      <div class="right">
-        <div class="binaryVisualizer" data-title="Compare File"></div>
-      </div>
-  </div>
-  <br/>
-  <div class="comparator" id="comparator-root">
-    <table class="comparator-layout">
-    <thead>
-      <tr>
-        <td>ROP Chain Execution Simulator</td>
-        <td></td>
-      </tr>
-    </thead>
-    <tbody>
-    <tr>
-      <td rowspan="2">
-        <span>Please enter a series of return addresses, to simulate jumping
-          to them by infecting the stack.</span><br/>
-        <input type="text" value="" id="rop-chain-content" style="width:99%;"></input>
-        <input type="button" id="generate-rand-chain-btn" value="Generate Random chain"></button>
-        <input type="button" id="exec-chain-btn" value="Execute Chain..."></button>
-      </td>
-      <td>
-        <div id="find-gadget">
-          <span>Find Gadget</span><br/>
-          <input type="text" id="gadget-find-content" value="ret"></input>
-          <input type="button" id="gadget-find-btn" value="Find Gadget"></button>
+    <hr/>
+    <div class="beforeLoad">Loading scripts. This can take a while....</div>
+
+    <div class="afterLoad" style="display: none">
+      <div class="visualizers">
+        <div class="left">
+          <div class="binaryVisualizer" data-title="Base File"></div>
         </div>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        <div id="find-addr">
-          <span>Find Address</span><br/>
-          <input type="text" id="address-find-content" value="0"></input>
-          <input type="button" id="address-find-btn" value="Find Address"></button>
-          </div>
+        <div class="right">
+          <div class="binaryVisualizer" data-title="Compare File"></div>
         </div>
-      </td>
-    </tr>
-    <tbody>
-  </table>
+      </div> <!-- End: visualizers div-->
+      <br/>
+      <div class="comparator" id="comparator-root">
+        <table class="comparator-layout">
+          <thead>
+            <tr>
+              <td>ROP Chain Execution Simulator</td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="2">
+                <span>Please enter a series of return addresses, to simulate jumping
+                  to them by infecting the stack.</span><br/>
+                <input type="text" value="" id="rop-chain-content" style="width:99%;"></input>
+                <input type="button" id="generate-rand-chain-btn" value="Generate Random chain"></button>
+                <input type="button" id="exec-chain-btn" value="Execute Chain..."></button>
+              </td>
+              <td>
+                <div id="find-gadget">
+                  <span>Find Gadget</span><br/>
+                  <input type="text" id="gadget-find-content" value="ret"></input>
+                  <input type="button" id="gadget-find-btn" value="Find Gadget"></button>
+                </div> <!-- End: find-gadget div -->
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id="find-addr">
+                  <span>Find Address</span><br/>
+                  <input type="text" id="address-find-content" value="0"></input>
+                  <input type="button" id="address-find-btn" value="Find Address"></button>
+                </div> <!-- End: find-addr div -->
+              </td>
+            </tr>
+          <tbody>
+        </table>
 
-  <div id="execution">
-  </div>
-
-  </div>
+        <div id="execution">
+        </div>
+      </div> <!-- End: comparator div -->
+  </div> <!-- End: afterLoad div -->
   <hr/>
-    <div class="footer">Developed, sponsored and maintained
-      by <a href="https://polyverse.io">Polyverse Corporation</a> under the
-      <a href="http://www.apache.org/licenses/">Apache 2.0</a> Open Source license.
-      View source code, licensing information, contributing information,
-      and more on <a href="https://github.com/Polyverse/binary-entropy-visualizer">Github</a>.
-    </div>
-</div>
+  <div class="footer">Developed, sponsored and maintained
+    by <a href="https://polyverse.io">Polyverse Corporation</a> under the
+    <a href="http://www.apache.org/licenses/">Apache 2.0</a> Open Source license.
+    View source code, licensing information, contributing information,
+    and more on <a href="https://github.com/Polyverse/binary-entropy-visualizer">Github</a>.
+  </div>
 </body>
 </html>
