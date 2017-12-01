@@ -4,29 +4,25 @@ _Determines the defensive quality of a binary's entropy on a scale of [0, 100]_
 ## Definition of Entropy Quality Index
 
 ```
-EQI = percentageOfDeadGadgets + (numberOfOffsets / numberOfMovedGadgets) * 100 * (1 - (standardDeviation(offsets)/largest_of_offset_counts));
+EQI = percentageOfDeadGadgets + (numberOfOffsets / numberOfMovedGadgets) * 100 * (1 - (standardDeviation(offsets)/highest_offset_count));
 ```
 
 ## Entropy Quality Index as a measure of resiliency to attacks
 In order to truly compare efficacy of ROP/symbol relocation entropy in a
-binary, we must first find a way to normalize the entropy on a one-dimensional
-scale on a number line.
+binary, we must normalize the entropy on a one-dimensional scale.
 
-While entropy is in itself perhaps not one-dimensional, the "cost of attack",
-or "probability of attack" can certainly be looked at in this manner.
+While entropy is certainly not one-dimensional, the "cost of attack",
+or "probability of attack" can certainly be.
 
-Given two attack methods, we can safely put them on a number line where
-either they are both equal, or one is easier than the other.
+E.g. given two attack methods, we can determine that they are both equally probable (equally expensitve),
+or one is less probable than the other (one costs more than the other).
 
-## Axions
+## Axiomatic Bounds
 
-Let's begin with the two bounding conditions for this Entropy Index.
-These definitions are brutally functional, so rather than talk about all the
-cool things we do to the binary, we talk about the difficulty for attack.
+This gives us two intuitive bounds for this Entropy Index.
 
-* If an attack is guaranteed to work with NO modification on a binary,
-  the entropy index is zero. This means there was ZERO by way of efficacy.
-  WannaCry and Petya fall under this category. Literally the exact same
+* If an attack is guaranteed to work with NO modification on two binaries,
+  the entropy index is zero. WannaCry and Petya fall under this category. Literally the exact same
   code could spread laterally and be assured to run.
 
 * If an attack is guaranteed to not work on a modified binary no matter what
@@ -64,9 +60,9 @@ dispatch tables, relocation tables, system calls, interrupts, and more.
   may be coming from a different part of the program.
 
 
-## Low-hanging conclusions
+## Deriving the formula
 
-Let's write some low-hanging predicates here:
+This is how I derived the formula:
 
 * If 100% gadgets survive, we have an entropy index of 0. No modification is
   required for the attack.
@@ -84,26 +80,32 @@ Let's write some low-hanging predicates here:
   This is fine.
 
 * All non-dead gadgets now fall into two categories: "moved" and "survived".
-  Let us ignore the survived. We can now scale the moved gadgets between [0, 100],
-  and we can then convert that scale to the total percentage, getting weighted percentage.
+  Anything survived is a liability.
+
+  We can scale the moved gadgets on a Movement Quality Index [0, 100].
+
+  We then scale the percentage of moved gadgets by MQI, getting an "effective
+  percentage of moved gadgets".
 
   For example: If 50% gadgets died, 50% moved, and none survived, then we
   measure the quality of movement on a scale of 0-100. Suppose we got 65% on
   that scale. We then apply that multiplier to the original 50% of moved gadgets
-  to get: 50 * 0.65 = 32.5
+  to get effective percentage: 50 * 0.65 = 32.5
 
-  Overall EQI = 50% (dead gadgets) + 32.5% movement quality = 82.5!
+  EQI = 50% (dead gadgets) + 32.5% effective movement = 82.5!
 
-* There are many ways to measure quality of movement. For the moment,
-  we can at least agree that two numbers are certainly necessary, if not
+* There are many ways to measure quality of movement. This is a TODO.
+
+  For the moment we can at least agree that two numbers are certainly necessary, if not
   sufficient to describe movement quality:
 
   * The number of different offsets with which gadgets are moved (e.g. 50% of the
-    gadgets were moved by one byte, and the remaining 50% by 2 bytes.) The more
-    numbers of offsets, the better. Ideally you would have a different offset
-    for each gadget. This effectively makes predicting the location of one gadget
-    impossible based on the location of any other. The cost of finding a gadget
-    stays constant for each gadget. Let us assign this a case of 100.
+    gadgets were moved by one byte, and the remaining 50% by 2 bytes., then
+    the number of different offsets is 2.) The higher numbers of offsets, the better.
+
+    Ideally you would have a different offset for each gadget. This effectively
+    makes predicting the location of one gadget impossible knowing the location
+    of any other. Let us assign this a case of 100.
 
     Let us scale this between 0-100 by computing number of offsets as a
     percentage of number of gadgets (which ensures us there were that many
@@ -116,15 +118,15 @@ Let's write some low-hanging predicates here:
     (In the future, we will apply a deeper scale that measures the quality of
       offsets themselves. Out of scope for a moment.)
 
-  * Uniformity of gadgets spread across offsets. If there were 100 offsets,
+  * Uniformity metric of gadgets spread across offsets. If there were 100 offsets,
     and 90% gadgets fell into only one offset, then detecting the offset of
     that gadget determines the offset of 90% of the others.
 
     For this we simply use standard deviation scaled between [0, 1] by dividing it
-    with the highest count at an offset, but since we want more uniformity,
+    with the highest count at an offset, but since we want uniformity,
     we'll subtract the standard deviation from it.
 
   * The movement quality is therefore measured as:
   ```
-    MQ  = (numberOfOffsets / numberOfMovedGadgets) * 100 * (1 - standardDeviation(offsets));
+    MQ  = (numberOfOffsets / numberOfMovedGadgets) * 100 * (1 - (standardDeviation(offsets)/highest_offset_count));
   ```

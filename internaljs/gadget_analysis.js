@@ -312,16 +312,6 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   }
 }
 
-function displayEntropyIndex(histogram, reporter) {
-  reporter.updateStatus("Computing Entropy Index now...");
-
-  // Entropy Quality Index is a function of a few things:
-  // 1. Number of dead gadgets (position -1 in the histogram)
-  // 2. Number of locations where gadgets moved (number of elements in the histogram)
-  // 3. Uniformity of the distribution of gadgets across all locations.
-
-}
-
 function combineAndOffset(instructions, symbols, offset) {
   const gadgets = instructions.concat(symbols);
   return gadgets.map(function(gadget) {
