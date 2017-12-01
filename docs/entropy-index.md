@@ -67,7 +67,7 @@ This is how I derived the formula:
 * If 100% gadgets survive, we have an entropy index of 0. No modification is
   required for the attack.
 
-* If 0% gadgets survive, the chances of attack are nearly zero (the probability
+* If 100% gadgets died, the chances of attack are nearly zero (the probability
   can tend to zero, but will never be zero.) However for practical purposes,
   the metric is a scale, and we can take this to be zero.
 
@@ -77,7 +77,7 @@ This is how I derived the formula:
   ```
 
   If a 100% of gadgets are dead, EQI is 100. If 100% gadgets survived, EQI is 0.
-  This is fine.
+  This is fine. Dead and Surviving gadgets are mutually exclusive.
 
 * All non-dead gadgets now fall into two categories: "moved" and "survived".
   Anything survived is a liability.

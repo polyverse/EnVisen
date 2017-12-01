@@ -127,8 +127,8 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   gadgetsWrapper.append('<span class="gadget-filter">Sort:</span>');
   gadgetsWrapper.append(sort);
 
+  const analyzeEntropyBtn = $('<input disabled="disabled" type="button" value="Entropy Analysis"/>')
   if (Object.keys(PrevGadgetAddrs).length > 0) {
-    const analyzeEntropyBtn = $('<input disabled="disabled" type="button" value="Entropy Analysis"/>')
     gadgetsWrapper.append(analyzeEntropyBtn);
     analyzeEntropyBtn.click(function() {
       displayEntropyIndex(histogram, reporter);
