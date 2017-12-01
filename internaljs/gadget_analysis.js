@@ -113,9 +113,9 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   const survival = $('<select class="gadget-filter"></select>');
   survival.append("<option>All</option>");
   if (Object.keys(PrevGadgetAddrs).length > 0) {
-    survival.append('<option>Survived</option>');
-    survival.append('<option>Moved</option>');
-    survival.append('<option>Dead</option>');
+    survival.append('<option disabled="disabled">Survived</option>');
+    survival.append('<option disabled="disabled">Moved</option>');
+    survival.append('<option disabled="disabled">Dead</option>');
   }
   gadgetsWrapper.append('<span class="gadget-filter">Survival:</span>');
   gadgetsWrapper.append(survival);
@@ -128,7 +128,7 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   gadgetsWrapper.append(sort);
 
   if (Object.keys(PrevGadgetAddrs).length > 0) {
-    const analyzeEntropyBtn = $('<input type="button" value="Entropy Analysis"/>')
+    const analyzeEntropyBtn = $('<input disabled="disabled" type="button" value="Entropy Analysis"/>')
     gadgetsWrapper.append(analyzeEntropyBtn);
     analyzeEntropyBtn.click(function() {
       displayEntropyIndex(histogram, reporter);
@@ -286,6 +286,9 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
     type.change(function(evt) {
       displayRows();
     });
+
+    survival.find('[disabled="disabled"]').removeAttr("disabled");
+    analyzeEntropyBtn.removeAttr("disabled");
 
     reporter.updateStatus("Table Rendering Complete.")
     reporter.completedAnalysis();
