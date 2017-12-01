@@ -6,16 +6,16 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     options = setElfDefaults(options, elf);
 
     elfElem.append(
-    '<span><i>Type</i>: <b>' + Elf.ObjType[elf.header.eType] +
+    '<div class="fileInfoWrapper"><span class="fileInfo"><i>Type</i>: <b>' + Elf.ObjType[elf.header.eType] +
     '</b>, <i>Machine</i>: <b>' + Elf.Machine[elf.header.machine] +
     '</b>, <i>Bits</i>: <b>' + Elf.Bits[elf.bits] +
     '</b>, <i>Endian</i>: <b>' + Elf.Endian[elf.endian] +
     '</b>, <i>ABI</i>: <b>' + Elf.OsAbi[elf.abi] +
     '</b>, <i>ABI Version</i>: <b>' + elf.abiVersion +
-    '</b>.</span><br/>');
+    '</b>.</span></div>');
 
     var expando = $('<a href="#">Show/Hide ELF Details</a>')
-    var expansionDiv = $('<div style="display: none"></div>');
+    var expansionDiv = $('<div style="display: none" class="expander"></div>');
     elfElem.append(expando)
     elfElem.append(expansionDiv)
     expando.click(function() {
@@ -27,7 +27,7 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     expansionDiv.append(tableWrapper);
 
     //fill in expansionDiv with section and program headers
-    var progHeadersTable = $('<table/>');
+    var progHeadersTable = $('<table class="clusterizedTable"/>');
     tableWrapper.append(progHeadersTable);
 
     progHeadersTable.append('<thead><tr>' +
@@ -70,7 +70,7 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     expansionDiv.append(tableWrapper);
 
     //fill in expansionDiv with section and program headers
-    var sectionHeadersTable = $('<table/>');
+    var sectionHeadersTable = $('<table class="clusterizedTable"/>');
     tableWrapper.append(sectionHeadersTable);
     sectionHeadersTable.append('<thead><tr>' +
     '<th>Name</th>' +

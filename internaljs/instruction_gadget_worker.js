@@ -7,9 +7,8 @@ self.importScripts("../externaljs/capstone.min.js");
    const arch = resolveArch(e.data.arch);
    const mode = resolveMode(arch, e.data.bits, e.data.endian, e.data.thumb);
    const gadgets = getAllGadgets(e.data.sections, arch, mode);
-   const chains = getAllChains(e.data.sections, arch, mode);
    postMessage({status: "Returning to main thread " + gadgets.length +
-    "gadgets, and " + chains.length + " chains.", gadgets: gadgets});
+    "gadgets.", gadgets: gadgets});
    close();
  }
 
@@ -484,18 +483,11 @@ function stripGadgets(gadgets) {
     var gadget = gadgets[gi];
     var strippedGadget = {
       vaddr: gadget.vaddr.toString(16),
-      gadget: gadget.gadget
+      gadget: gadget.gadget,
+      type: "instructions",
     };
     strippedGadgets.push(strippedGadget);
   }
 
   return strippedGadgets;
-}
-
-
-/************************* Chain Finding ****************************************************/
-
-function getAllChains(gadgets, arch, mode) {
-  let chains = [];
-  return chains;
 }

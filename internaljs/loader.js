@@ -174,7 +174,7 @@ function getFileProcessor(index) {
           if (nextCollector.length > 0) {
             nextCollector.unblock();
           }
-          setTimeout(launchComparator, 10);
+          setTimeout(unblockUtilities, 10);
         }
 
         progressBarElem.click(function() {

@@ -47,6 +47,23 @@
   padding-bottom: 10px;
 }
 
+.expander {
+    border: dashed thin;
+}
+
+.clusterizedTable {
+}
+
+.fileInfoWrapper {
+    overflow-y: scroll;
+    white-space: nowrap;
+    border: 2px inset;
+}
+.fileInfo {
+    display: inline-block;
+    white-space: nowrap;
+}
+
 tr:nth-of-type(even) {
   background-color: #F9F9F9;
 }
@@ -65,21 +82,21 @@ tr:nth-of-type(even) {
   font-size: 50%;
 }
 
-.comparator {
+.utilities {
   width: 100%;
 }
 
-.comparator-layout {
+.utilities-layout {
   width: 100%;
   border: 1px solid;
 }
 
-.comparator-layout thead td, #execution thead td {
+.utilities-layout thead td, #execution thead td {
     text-align: center;
     font-weight: bold;
 }
 
-.comparator-layout tbody td {
+.utilities-layout tbody td {
   border: 1px dotted;
 }
 
@@ -141,4 +158,10 @@ tr:nth-of-type(even) {
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {
     visibility: visible;
+}
+
+
+.explain-selection {
+  font-size: 80%;
+  font-style: italic;
 }

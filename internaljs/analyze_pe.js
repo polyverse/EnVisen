@@ -7,14 +7,14 @@ function analyzePe(dataArray, options, peElem, reporter) {
   reporter.updateStatus('Analysing PE data...');
 
   peElem.append(
-  '<span><i>Machine Type</i>: <b>' + MicrosoftPe.CoffHeader.MachineType[pe.coffHdr.machine] +
+  '<div class="fileInfoWrapper"><span class="fileInfo"><i>Machine Type</i>: <b>' + MicrosoftPe.CoffHeader.MachineType[pe.coffHdr.machine] +
   '</b>, <i>Characteristics</i>: <b>' + interpretFlags(pe.coffHdr.characteristics, MicrosoftPe.CoffHeader.Characteristics) +
   '</b>, <i>Subsystem</i>: <b>' + MicrosoftPe.OptionalHeaderWindows.SubsystemEnum[pe.optionalHdr.windows.subsystem] +
   '</b>, <i>Format</i>: <b>' + MicrosoftPe.PeFormat[pe.optionalHdr.std.format] +
-  '</b>.</span><br/>');
+  '</b>.</span></div>');
 
   var expando = $('<a href="#">Show/Hide PE Details</a>')
-  var expansionDiv = $('<div style="display: none"></div>');
+  var expansionDiv = $('<div style="display: none" class="expander"></div>');
   peElem.append(expando)
   peElem.append(expansionDiv)
   expando.click(function() {
@@ -26,7 +26,7 @@ function analyzePe(dataArray, options, peElem, reporter) {
   expansionDiv.append(tableWrapper);
 
   //fill in expansionDiv with section and program headers
-  var sectionsTable = $('<table/>');
+  var sectionsTable = $('<table class="clusterizedTable"/>');
   tableWrapper.append(sectionsTable);
 
   sectionsTable.append('<thead><tr>' +

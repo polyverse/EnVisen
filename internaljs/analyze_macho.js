@@ -6,15 +6,15 @@ function analyzeMachO(dataArray, options,  machoElem, reporter) {
     reporter.updateStatus('Analysing MachO data...');
 
     machoElem.append(
-    '<span><i>Magic</i>: <b>' + MachO.MagicType[macho.magic] +
+    '<div class="fileInfoWrapper"><span class="fileInfo"><i>Magic</i>: <b>' + MachO.MagicType[macho.magic] +
     '</b>, <span><i>File</i>: <b>' + MachO.FileType[macho.header.filetype] +
     '</b>, <i>CPU</i>: <b>' + MachO.CpuType[macho.header.cputype] +
     '</b>, <i>CPU Subtype</i>: <b>' + macho.header.cpusubtype +
     '</b>, <i>Flags</i>: <b>' + macho.header.flags + ' (' + interpretFlags(macho.header.flags, MachO.MachoFlags) + ')' +
-    '</b>.</span><br/>');
+    '</b>.</span></div>');
 
     var expando = $('<a href="#">Show/Hide MachO Details</a>')
-    var expansionDiv = $('<div style="display: none"></div>');
+    var expansionDiv = $('<div style="display: none" class="expander"></div>');
     machoElem.append(expando)
     machoElem.append(expansionDiv)
     expando.click(function() {
@@ -26,7 +26,7 @@ function analyzeMachO(dataArray, options,  machoElem, reporter) {
     expansionDiv.append(tableWrapper);
 
     //fill in expansionDiv with section and program headers
-    var loadCommandsTable = $('<table/>');
+    var loadCommandsTable = $('<table class="clusterizedTable"/>');
     tableWrapper.append(loadCommandsTable);
 
     loadCommandsTable.append('<thead><tr>' +

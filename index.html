@@ -37,7 +37,7 @@
         "internaljs/analyze_macho.js",
         "internaljs/analyze_raw.js",
         "internaljs/loader.js",
-        "internaljs/comparator.js",
+        "internaljs/utilities.js",
         "internaljs/gadget_analysis.js"
       ],
 
@@ -45,7 +45,7 @@
         $(".beforeLoad").toggle();
         $(".afterLoad").toggle();
         attachVisualizers();
-        attachComparators();
+        attachUtilities();
       }
     );
     </script>
@@ -77,8 +77,8 @@
         </div>
       </div> <!-- End: visualizers div-->
       <br/>
-      <div class="comparator" id="comparator-root">
-        <table class="comparator-layout">
+      <div class="utilities" id="utilities-root">
+        <table class="utilities-layout">
           <thead>
             <tr>
               <td>ROP Chain Execution Simulator</td>

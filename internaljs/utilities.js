@@ -1,6 +1,6 @@
-function attachComparators() {
+function attachUtilities() {
 
-  $("#comparator-root").block({
+  $("#utilities-root").block({
     message: 'Analyze a file (or more) to enable ROP simulation tools.',
     css: { border: '1px dotted blue', cursor: 'not-allowed' },
     overlayCSS:  { opacity:         0.2, cursor: 'not-allowed' }
@@ -138,13 +138,13 @@ function scrollTableToSelectedRow(table, index) {
 }
 
 
-function launchComparator() {
+function unblockUtilities() {
   if ($(".ropTable").length > 1) {
     $("#generate-surv-chain-btn").removeAttr("disabled");
   } else {
     $("#generate-surv-chain-btn").attr("disabled", "disabled");
   }
-  $("#comparator-root").unblock();
+  $("#utilities-root").unblock();
 
 }
 

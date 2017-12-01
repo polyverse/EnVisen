@@ -1,17 +1,19 @@
 
-var VaddrRegExp = new RegExp('data-vaddr="([^"]+)"', 'i');
-var GadgetRegExp = new RegExp('data-gadget="([^"]+)"', 'i');
-var TablesToRows = {};
-var TablesToGadgets = {};
+const VaddrRegExp = new RegExp('data-vaddr="([^"]+)"', 'i');
+const GadgetRegExp = new RegExp('data-gadget="([^"]+)"', 'i');
+const TypeRegExp = new RegExp('data-type="([^"]+)"', 'i');
+let TablesToRows = {};
+let TablesToGadgets = {};
+let PrevGadgetAddrs = {};
 
 function analyzeResultErrorCapture(index, filename, dataArray, options, analysisElem, reporter) {
-  var errorElem = $("<span/>")
+  const errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
 
-  var formatElem = $("<div/>");
+  const formatElem = $("<div/>");
   $(analysisElem).append(formatElem)
 
-  var ropElem=$("<div/>")
+  const ropElem=$("<div/>")
   $(analysisElem).append(ropElem);
 
   let sections = [];
@@ -20,11 +22,12 @@ function analyzeResultErrorCapture(index, filename, dataArray, options, analysis
   if (filename.endsWith(".json")) {
       reporter.updateStatus("Filename ends with .json. Testing whether data is JSON...");
       const decoder = new TextDecoder('utf8');
-      const loadBlob = JSON.parse(decoder.decode(dataArray));
+      const binInfo = JSON.parse(decoder.decode(dataArray));
       reporter.completedFileAnalysis();
       reporter.updateStatus("That worked. Rendering Table from gadgets found in json...");
+      formatElem.append('<div class="fileInfoWrapper"><span class="fileInfo">Data loaded from JSON.</span></div>');
       setTimeout(function() {
-        renderGadgetsTableInWorker(loadBlob.gadgets, loadBlob.chains, loadBlob.symbols, loadBlob.options, filename, ropElem, reporter);
+        renderGadgetsTableInWorker(binInfo, filename, ropElem, reporter);
       }, 20);
       return;
     } else {
@@ -61,7 +64,7 @@ function findRopThroughWorker(sections, symbols, filename, options, ropElem, rep
 
       reporter.updateStatus("Finding ROP gadgets in " + sections.length + " sections found in the binary provided.");
 
-      const worker = new Worker("internaljs/gadget.js");
+      const worker = new Worker("internaljs/instruction_gadget_worker.js");
       worker.postMessage({
         sections: sections,
         arch: options.arch,
@@ -73,12 +76,11 @@ function findRopThroughWorker(sections, symbols, filename, options, ropElem, rep
       worker.onmessage = function(e) {
         reporter.updateStatus(e.data.status);
         if (e.data.gadgets) {
-          const gadgets = e.data.gadgets;
-          const chains = e.data.chains;
+          const instructions = e.data.gadgets;
           worker.terminate();
           reporter.updateStatus("Rendering Table...");
           setTimeout(function() {
-            renderGadgetsTableInWorker(gadgets, chains, symbols, options, filename + ".json", ropElem, reporter);
+            renderGadgetsTableInWorker({instructions, symbols, options}, filename + ".json", ropElem, reporter);
           }, 20);
         }
       }
@@ -88,42 +90,48 @@ function findRopThroughWorker(sections, symbols, filename, options, ropElem, rep
     }
 }
 
-function renderGadgetsTableInWorker(gadgets, chains, symbols, options, jsonFileName, ropElem, reporter) {
+function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
 
-  gadgets = applyOffset(gadgets, options.offset);
+  const gadgets = combineAndOffset(binInfo.instructions, binInfo.symbols, binInfo.options.offset);
 
-  var expando = $('<a href="#">Show/Hide ROP Table</a>');
+  const expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);
 
-  var save = $('<a href="#" class="save">(Save as JSON)</a><br/>');
+  const save = $('<a href="#" class="save">(Save as JSON)</a><br/>');
   ropElem.append(save);
 
-  var gadgetsWrapper = $('<div>');
+  const gadgetsWrapper = $('<div class="expander">');
 
-  var filter = $('<select class="gadget-filter"></select>');
-  filter.append("<option>All Gadgets</option>");
-  gadgetsWrapper.append('<span class="gadget-filter">Filter:</span>');
-  gadgetsWrapper.append(filter);
+  const type = $('<select class="gadget-filter"></select>');
+  type.append("<option>All</option>");
+  type.append('<option>Instructions</option>');
+  type.append('<option>Symbols</option>');
+  gadgetsWrapper.append('<span class="gadget-filter">Type:</span>');
+  gadgetsWrapper.append(type);
 
-  if (typeof(gadgetshash) == "undefined") {
-    gadgetshash = {};
-  } else {
-    filter.append('<option disabled="disabled">Surviving Gadgets</option>');
-    filter.append('<option disabled="disabled">Moved Gadgets</option>');
+  const survival = $('<select class="gadget-filter"></select>');
+  survival.append("<option>All</option>");
+  if (Object.keys(PrevGadgetAddrs).length > 0) {
+    survival.append('<option disabled="disabled">Survived</option>');
+    survival.append('<option disabled="disabled">Moved</option>');
+    survival.append('<option disabled="disabled">Dead</option>');
   }
+  gadgetsWrapper.append('<span class="gadget-filter">Survival:</span>');
+  gadgetsWrapper.append(survival);
 
-  var sort = $('<select class="gadget-sort"></select>');
-  var optionAlpha = $
+  const sort = $('<select class="gadget-sort"></select>');
   sort.append("<option>Alphabetically</option>");
   sort.append("<option>Topographically</option>");
+  sort.append("<option>By Type</option>");
   gadgetsWrapper.append('<span class="gadget-filter">Sort:</span>');
   gadgetsWrapper.append(sort);
 
-  var displayStatusSpan = $("<span></span>");
+  gadgetsWrapper.append("<br/>");
+  const displayStatusSpan = $('<span class="explain-selection"></span>');
   gadgetsWrapper.append(displayStatusSpan);
 
-  var ropTableWrapper = $('<div class="clusterize-scroll">');
-  var ropTable = $('<table style="display: block" class="ropTable">');
+  const ropTableWrapper = $('<div class="clusterize-scroll">');
+  const ropTable = $('<table style="display: block" class="ropTable clusterizedTable">');
   ropTableWrapper.append(ropTable);
   gadgetsWrapper.append(ropTableWrapper);
 
@@ -139,30 +147,25 @@ function renderGadgetsTableInWorker(gadgets, chains, symbols, options, jsonFileN
     tableIdx++;
   }
 
-  name = "table" + tableIdx;
+  const name = "table" + tableIdx;
   ropTable.data("name", name);
   ropTable.attr("id", name);
-  ropTable.append('<thead><tr><th>VAddr</th><th>Gadget</th></tr></thead>');
+  ropTable.append('<thead><tr><th>VAddr</th><th>Gadget</th><th>Type</th></tr></thead>');
 
   save.click(function() {
-      saveBlob = {
-        options: options,
-        gadgets: gadgets,
-        chains: chains,
-      }
-      saveAs(new Blob([JSON.stringify(saveBlob, null, 2)], {type: "application/json"})
+      saveAs(new Blob([JSON.stringify(binInfo, null, 2)], {type: "application/json"})
     		, jsonFileName);
   })
 
-  var tBody = $('<tbody class="clusterize-content">');
+  const tBody = $('<tbody class="clusterize-content">');
   ropTable.append(tBody);
 
-  var worker = new Worker("internaljs/render_gadget_table.js");
-  var allRows = [];
+  const worker = new Worker("internaljs/render_gadget_row_worker.js");
+  let allRows = [];
 
   // Draw the table out of the main loop
   function drawTable() {
-    var clusterize = new Clusterize({
+    const clusterize = new Clusterize({
       scrollElem: ropTableWrapper.get(0),
       contentElem: tBody.get(0),
     });
@@ -171,19 +174,43 @@ function renderGadgetsTableInWorker(gadgets, chains, symbols, options, jsonFileN
       var displayStatus = "Displaying ";
 
       var dr = allRows;
-      switch (filter.val()) {
-        case "Surviving Gadgets":
+      switch (survival.val()) {
+        case "Survived":
           displayStatus += "surviving gadgets ";
-          reporter.updateStatus("Filtering surviving gadgets...");
+          reporter.updateStatus("Filtering in surviving gadgets...");
           dr = allRows.filter(function(row) {return row.includes("survived");});
         break;
-        case "Moved Gadgets":
-          displayStatus += "surviving gadgets ";
-          reporter.updateStatus("Filtering moved gadgets...");
+        case "Moved":
+          displayStatus += "moved gadgets ";
+          reporter.updateStatus("Filtering in moved gadgets...");
           dr = allRows.filter(function(row) {return row.includes("moved");});
+        break;
+        case "Dead":
+          displayStatus += "dead gadgets ";
+          reporter.updateStatus("Filtering in dead gadgets...");
+          dr = allRows.filter(function(row) {return row.includes("dead");});
         break;
         default:
           displayStatus += "all gadgets ";
+          reporter.updateStatus("Filtering in all gadgets...");
+          dr = allRows;
+        break;
+      }
+
+      switch (type.val()) {
+        case "Instructions":
+          displayStatus += "of type instruction ";
+          reporter.updateStatus("Filtering in instruction gadgets...");
+          dr = dr.filter(function(row) {return row.includes("instructions");});
+        break;
+        case "Symbols":
+          displayStatus += "of type symbol ";
+          reporter.updateStatus("Filtering in symbol gadgets...");
+          dr = dr.filter(function(row) {return row.includes("symbol");});
+        break;
+        default:
+          displayStatus += "of all types ";
+          reporter.updateStatus("Filtering in all gadgets...");
         break;
       }
 
@@ -199,7 +226,16 @@ function renderGadgetsTableInWorker(gadgets, chains, symbols, options, jsonFileN
         if (gadgeta < gadgetb) return -1;
         if (gadgeta > gadgetb) return 1;
 
-        return vaddrComparator(a, b);
+        return 0;
+      }
+
+      function typeComparator(a, b) {
+        var typea = TypeRegExp.exec(a)[1];
+        var typeb = TypeRegExp.exec(b)[1];
+        if (typea < typeb) return -1;
+        if (typea > typeb) return 1;
+
+        return 0;
       }
 
       switch (sort.val()) {
@@ -213,6 +249,11 @@ function renderGadgetsTableInWorker(gadgets, chains, symbols, options, jsonFileN
           reporter.updateStatus("Sorting gadgets topographically...");
           dr = dr.sort(vaddrComparator);
         break;
+        case "By Type":
+          displayStatus += "sorted by type: ";
+          reporter.updateStatus("Sorting gadgets by type...");
+          dr = dr.sort(typeComparator);
+        break;
       }
       displayStatus += dr.length;
 
@@ -224,31 +265,37 @@ function renderGadgetsTableInWorker(gadgets, chains, symbols, options, jsonFileN
     }
 
     displayRows();
-    TablesToGadgets[name] = gadgets;
 
     sort.change(function(evt) {
       displayRows();
     });
 
-    filter.change(function(evt) {
+    survival.change(function(evt) {
       displayRows();
     });
 
-    filter.find('[disabled="disabled"]').removeAttr("disabled");
+    type.change(function(evt) {
+      displayRows();
+    });
+
+    survival.find('[disabled="disabled"]').removeAttr("disabled");
     reporter.updateStatus("Table Rendering Complete.")
     reporter.completedAnalysis();
   }
 
+  TablesToGadgets[name] = gadgets;
+
   worker.postMessage({
     gadgets: gadgets,
-    gadgetshash: gadgetshash
+    prevGadgetsAddrs: PrevGadgetAddrs
   });
 
   worker.onmessage = function(e) {
       if (e.data.finished) {
         worker.terminate();
         reporter.completedRop();
-        gadgetshash = e.data.gadgetshash;
+        PrevGadgetAddrs = e.data.newGadgetsAddrs;
+        histogram = e.data.histogram;
         setTimeout(drawTable, 20); //Call this async
       } else {
         reporter.updateStatus(e.data.status);
@@ -258,11 +305,13 @@ function renderGadgetsTableInWorker(gadgets, chains, symbols, options, jsonFileN
 }
 
 
-function applyOffset(gadgets, offset) {
+function combineAndOffset(instructions, symbols, offset) {
+  const gadgets = instructions.concat(symbols);
   return gadgets.map(function(gadget) {
     return {
       vaddr: (parseInt(gadget.vaddr, 16) + offset).toString(16),
-      gadget: gadget.gadget
+      gadget: gadget.gadget,
+      type: gadget.type
     };
   });
 }
