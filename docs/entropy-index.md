@@ -4,7 +4,7 @@ _Determines the defensive quality of a binary's entropy on a scale of [0, 100]_
 ## Definition of Entropy Quality Index
 
 ```
-EQI = percentageOfDeadGadgets + (numberOfOffsets / numberOfMovedGadgets) * 100 * (1 - standardDeviation(offsets));
+EQI = percentageOfDeadGadgets + (numberOfOffsets / numberOfMovedGadgets) * 100 * (1 - (standardDeviation(offsets)/largest_of_offset_counts));
 ```
 
 ## Entropy Quality Index as a measure of resiliency to attacks
