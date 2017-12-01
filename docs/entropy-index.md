@@ -14,7 +14,7 @@ binary, we must normalize the entropy on a one-dimensional scale.
 While entropy is certainly not one-dimensional, the "cost of attack",
 or "probability of attack" can certainly be.
 
-E.g. given two attack methods, we can determine that they are both equally probable (equally expensitve),
+E.g. given two attack methods, we can determine that they are both equally probable (equally expensive),
 or one is less probable than the other (one costs more than the other).
 
 ## Axiomatic Bounds
