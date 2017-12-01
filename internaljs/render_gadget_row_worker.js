@@ -13,12 +13,13 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
   const histogram = {};
 
   function incrementNewGadetsAddrs(gadget) {
+    const addrInt = parseInt(gadget.vaddr, 16);
     if (gadget.gadget in newGadgetsAddrs) {
       //push another address
-      newGadgetsAddrs[gadget.gadget].push(gadget.vaddr);
+      newGadgetsAddrs[gadget.gadget].push(addrInt);
     } else {
       //construct new hash
-      newGadgetsAddrs[gadget.gadget] = [gadget.vaddr];
+      newGadgetsAddrs[gadget.gadget] = [addrInt];
     }
   }
 
@@ -36,16 +37,17 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
     incrementNewGadetsAddrs(gadget);
 
     let className = ""
-    const [closestAddr, dist] = findClosestAddr(prevGadgetsAddrs[gadget.gadget], gadget.vaddr);
-    incrementHistogram(Math.floor(dist));
-    if (dist >= 0) {
-      if (dist < 1) {
+    const [closestAddr, closestOffset, found] = findClosestAddr(prevGadgetsAddrs[gadget.gadget], gadget.vaddr);
+    incrementHistogram(closestOffset);
+    if (found) {
+      if (closestOffset == 0) {
         className = "survived";
       } else  {
         className = "moved";
       }
     }else {
-      className = "dead"
+      incrementHistogram("dead");
+      className = "dead";
     }
 
     const tr ='<tr class="' + className + ' ' + gadget.type + '" ' +
@@ -68,13 +70,21 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
 function findClosestAddr(addrs, addr) {
   let closestDist = -1;
   let closestAddr = 0;
+  let found = false;
+  let closestOffset = 0;
+
+  const addrInt = parseInt(addr, 16);
+
   for (let i in addrs) {
     const candidateAddr = addrs[i];
-    const candidateDist = Math.abs(parseInt(candidateAddr, 16) - parseInt(addr, 16));
-    if (closestDist == -1 || candidateDist < closestDist) {
+    const candidateOffset = candidateAddr - addrInt;
+    const candidateDist = Math.abs(candidateOffset);
+    if (!found || candidateDist < closestDist) {
+      found = true;
       closestAddr = candidateAddr;
       closestDist = candidateDist;
+      closestOffset = candidateOffset;
     }
   }
-  return [closestAddr, closestDist];
+  return [closestAddr, closestOffset, found];
 }

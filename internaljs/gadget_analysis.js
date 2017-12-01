@@ -93,6 +93,7 @@ function findRopThroughWorker(sections, symbols, filename, options, ropElem, rep
 function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
 
   const gadgets = combineAndOffset(binInfo.instructions, binInfo.symbols, binInfo.options.offset);
+  let histogram = {};
 
   const expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);
@@ -112,9 +113,9 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   const survival = $('<select class="gadget-filter"></select>');
   survival.append("<option>All</option>");
   if (Object.keys(PrevGadgetAddrs).length > 0) {
-    survival.append('<option disabled="disabled">Survived</option>');
-    survival.append('<option disabled="disabled">Moved</option>');
-    survival.append('<option disabled="disabled">Dead</option>');
+    survival.append('<option>Survived</option>');
+    survival.append('<option>Moved</option>');
+    survival.append('<option>Dead</option>');
   }
   gadgetsWrapper.append('<span class="gadget-filter">Survival:</span>');
   gadgetsWrapper.append(survival);
@@ -125,6 +126,14 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   sort.append("<option>By Type</option>");
   gadgetsWrapper.append('<span class="gadget-filter">Sort:</span>');
   gadgetsWrapper.append(sort);
+
+  if (Object.keys(PrevGadgetAddrs).length > 0) {
+    const analyzeEntropyBtn = $('<input type="button" value="Entropy Analysis"/>')
+    gadgetsWrapper.append(analyzeEntropyBtn);
+    analyzeEntropyBtn.click(function() {
+      displayEntropyIndex(histogram, reporter);
+    });
+  }
 
   gadgetsWrapper.append("<br/>");
   const displayStatusSpan = $('<span class="explain-selection"></span>');
@@ -278,7 +287,6 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
       displayRows();
     });
 
-    survival.find('[disabled="disabled"]').removeAttr("disabled");
     reporter.updateStatus("Table Rendering Complete.")
     reporter.completedAnalysis();
   }
@@ -304,6 +312,15 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   }
 }
 
+function displayEntropyIndex(histogram, reporter) {
+  reporter.updateStatus("Computing Entropy Index now...");
+
+  // Entropy Quality Index is a function of a few things:
+  // 1. Number of dead gadgets (position -1 in the histogram)
+  // 2. Number of locations where gadgets moved (number of elements in the histogram)
+  // 3. Uniformity of the distribution of gadgets across all locations.
+
+}
 
 function combineAndOffset(instructions, symbols, offset) {
   const gadgets = instructions.concat(symbols);

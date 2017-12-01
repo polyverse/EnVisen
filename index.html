@@ -15,6 +15,8 @@
 
     <link rel="stylesheet" type="text/css" href="externalcss/tinyprogressbar.css"/>
     <link rel="stylesheet" type="text/css" href="externalcss/clusterize.css"/>
+    <link rel="stylesheet" type="text/css" href="externalcss/vex.css" />
+    <link rel="stylesheet" type="text/css" href="externalcss/vex-theme-wireframe.css" />
 
     <link rel="stylesheet" type="text/css"  href="internalcss/visualizer.css"/>
 
@@ -31,6 +33,7 @@
         "externaljs/blob.js",
         "externaljs/filesaver.js",
         "externaljs/capstone.min.js",
+        "externaljs/vex.combined.min.js",
 
         "internaljs/analyze_elf.js",
         "internaljs/analyze_pe.js",
@@ -38,10 +41,12 @@
         "internaljs/analyze_raw.js",
         "internaljs/loader.js",
         "internaljs/utilities.js",
-        "internaljs/gadget_analysis.js"
+        "internaljs/gadget_analysis.js",
+        "internaljs/entropy_index.js"
       ],
 
       function() {
+        vex.defaultOptions.className = 'vex-theme-wireframe';
         $(".beforeLoad").toggle();
         $(".afterLoad").toggle();
         attachVisualizers();
