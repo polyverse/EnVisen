@@ -10,7 +10,7 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
   const group=10000;
   let rows = [];
   const newGadgetsAddrs = {};
-  const histogram = {};
+  const offsetCounts = {};
 
   function incrementNewGadetsAddrs(gadget) {
     const addrInt = parseInt(gadget.vaddr, 16);
@@ -23,11 +23,11 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
     }
   }
 
-  function incrementHistogram(movement) {
-    if (movement in histogram) {
-      histogram[movement]++;
+  function incrementOffsetCounts(movement) {
+    if (movement in offsetCounts) {
+      offsetCounts[movement]++;
     } else {
-      histogram[movement] = 1;
+      offsetCounts[movement] = 1;
     }
   }
 
@@ -38,16 +38,16 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
 
     let className = ""
     const [closestAddr, closestOffset, found] = findClosestAddr(prevGadgetsAddrs[gadget.gadget], gadget.vaddr);
-    incrementHistogram(closestOffset);
     if (found) {
+      incrementOffsetCounts(closestOffset);
       if (closestOffset == 0) {
         className = "survived";
       } else  {
         className = "moved";
       }
     }else {
-      incrementHistogram("dead");
-      className = "dead";
+      incrementOffsetCounts("new");
+      className = "new";
     }
 
     const tr ='<tr class="' + className + ' ' + gadget.type + '" ' +
@@ -64,7 +64,7 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
       rows = [];
     }
   }
-  postMessage({finished: true, newGadgetsAddrs: newGadgetsAddrs, histogram: histogram});
+  postMessage({finished: true, newGadgetsAddrs: newGadgetsAddrs, offsetCounts: offsetCounts});
 }
 
 function findClosestAddr(addrs, addr) {

@@ -93,7 +93,7 @@ function findRopThroughWorker(sections, symbols, filename, options, ropElem, rep
 function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
 
   const gadgets = combineAndOffset(binInfo.instructions, binInfo.symbols, binInfo.options.offset);
-  let histogram = {};
+  let offsetCounts = {};
 
   const expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);
@@ -131,7 +131,7 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   if (Object.keys(PrevGadgetAddrs).length > 0) {
     gadgetsWrapper.append(analyzeEntropyBtn);
     analyzeEntropyBtn.click(function() {
-      displayEntropyIndex(histogram, reporter);
+      displayEntropyAnalysis(offsetCounts, reporter);
     });
   }
 
@@ -305,8 +305,10 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
       if (e.data.finished) {
         worker.terminate();
         reporter.completedRop();
-        PrevGadgetAddrs = e.data.newGadgetsAddrs;
-        histogram = e.data.histogram;
+        const newGadgetAddrs = e.data.newGadgetsAddrs;
+        offsetCounts = e.data.offsetCounts;
+        computeDeadGadgets(offsetCounts, PrevGadgetAddrs, newGadgetAddrs);
+        PrevGadgetAddrs = newGadgetAddrs;
         setTimeout(drawTable, 20); //Call this async
       } else {
         reporter.updateStatus(e.data.status);
@@ -347,4 +349,16 @@ function interpretFlags(flags, consts) {
     fstr = '(' + fstr + ')';
   }
   return fstr
+}
+
+function computeDeadGadgets(offsetCounts, PrevGadgetAddrs, newGadgetAddrs) {
+  let deadCount = 0;
+  for (let gad in PrevGadgetAddrs) {
+    const prevGadgets = PrevGadgetAddrs[gad];
+    if (!(gad in newGadgetAddrs)) {
+      deadCount += prevGadgets.length;
+    }
+  }
+
+  offsetCounts["dead"] = deadCount;
 }

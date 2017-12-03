@@ -165,3 +165,8 @@ tr:nth-of-type(even) {
   font-size: 80%;
   font-style: italic;
 }
+
+.chartCanvas {
+    display: inline-block;
+    float: left;
+}

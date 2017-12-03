@@ -8,57 +8,53 @@ EQI = percentageOfDeadGadgets + (numberOfOffsets / numberOfMovedGadgets) * 100 *
 ```
 
 ## Entropy Quality Index as a measure of resiliency to attacks
-In order to truly compare efficacy of ROP/symbol relocation entropy in a
+In order to approximately compare efficacy of ROP/symbol relocation entropy in a
 binary, we must normalize the entropy on a one-dimensional scale.
 
 While entropy is certainly not one-dimensional, the "cost of attack",
 or "probability of attack" can certainly be.
 
-E.g. given two attack methods, we can determine that they are both equally probable (equally expensive),
-or one is less probable than the other (one costs more than the other).
-
 ## Axiomatic Bounds
 
 This gives us two intuitive bounds for this Entropy Index.
 
-* If an attack is guaranteed to work with NO modification on two binaries,
+* If an attack is guaranteed to work with on two binaries, with no modification or adaptiation to the attack,
   the entropy index is zero. WannaCry and Petya fall under this category. Literally the exact same
   code could spread laterally and be assured to run.
 
-* If an attack is guaranteed to not work on a modified binary no matter what
-  modifications are made, then that is an Entropy Index of 100. The defense
+* If an attack is guaranteed to not work on a two binaries no matter what
+  modifications or adaptations are are made to the attack, then that is an Entropy Index of 100. The defense
   was a 100% effective under all forms of a particular attack.
 
 ## Terminology
 
 Let us consider a binary is made up of "gadgets", bits and pieces of code
-that work together to form a complete program. These may be instructions,
-dispatch tables, relocation tables, system calls, interrupts, and more.
+that work together to form a complete program. These are a sequence of instructions
+at a particular given address.
 
-* Original Binary: The base of comparison.
+* We have one _original_ and one _modified_ binary. Call them A and B.
 
-* Modified Binary: The binary being compared to the base.
+* A Gadget _survives_ if it appears at the same location in both A and B.
 
-* Dead Gadget: A Gadget is considered dead if it appears in
-  the modified binary, but not the source binary.
+* A Gadget has _moved_ if appears in both A and B, but not at the same location. It is possible
+for there to be a different number of moved gadgets in B, than those existed in A. Conceretely:
+```
+moved(A, B) is not equal to moved(B, A)
+```
 
-* Moved Gadget: A Gadget is considered moved, it if appears in both the binaries,
-  but the address in the Modified Binary does not contain the same gadget in the Base.
-  It is possible for there to be a different number of moved gadgets between binaries.
+* New Gadget: A Gadget is _new_ if it appears in B but not at any location in A. That is, it was brand new to B.
 
-  For example, "gad1" may appear at locations [1, 2, 3] in Base, but [5, 6, 7, 8, 9]
-  in the Modified. All five gadgets are considered "moved", because at least one
-  instance was found in the original.
-
-* Surviving Gadgets: A Gadget is considered survived, if it appears at
-  the same location in both the binaries.
+* Dead Gadget: A Gadget is _dead_ if it appears in A but not at any location in B. That is, it neither survived nor moved.
 
 * Offset of Moved Gadgets: The distance between the address of a moved gadget in
-  the Modified Binary, and the nearest address at which the same gadget is found
-  in the Base Binary. We fully recognize that this definition can be improved.
+  B, and the nearest address at which the same gadget is found
+  in A. We fully recognize that this definition can be improved.
   Some gadgets may have actually moved farther and the nearest-gadget
   may be coming from a different part of the program.
 
+## EQI is not commutative
+  EQI is the entropy produced in B, given that A has existed. Therefore, the EQI(A, B) is not the same
+  as EQI(B, A).
 
 ## Deriving the formula
 
@@ -105,7 +101,7 @@ This is how I derived the formula:
 
     Ideally you would have a different offset for each gadget. This effectively
     makes predicting the location of one gadget impossible knowing the location
-    of any other. Let us assign this a case of 100.
+    of any other. Let us assign this a case (cwf: "case" looks like a typo, but I'm not sure what you meant) of 100.
 
     Let us scale this between 0-100 by computing number of offsets as a
     percentage of number of gadgets (which ensures us there were that many
