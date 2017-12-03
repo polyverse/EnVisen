@@ -62,7 +62,7 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
   reporter.updateStatus("Displaying analysis popover");
 
   movedKeys.sort(function(a, b) {return a-b;});
-  const [histLabels, histData] = computeHistogram(offsetCounts, movedKeys, movedKeys[0], movedKeys[movedKeys.length-1], 30);
+  const [histLabels, histData] = computeHistogram(offsetCounts, movedKeys, movedKeys[0], movedKeys[movedKeys.length-1], 20);
 
   picoModal({
       content: '<div id="entropyAnalysisContainer"/>',
@@ -119,26 +119,32 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
     var gadgetHistCanvasCtx = gadgetHistCanvas.get(0).getContext('2d');
     // Draw movement histogram bar chart
     const gadgetHistChart = new Chart(gadgetHistCanvasCtx, {
-        type: 'line',
+        type: 'bar',
         options: {
           legend: { display: false },
           title: {
             display: true,
-            text: 'Distribution of Move distances (quality)'
+            text: 'Distribution by move offsets'
           },
           responsive: false,
           maintainAspectRatio: false,
-          scaleShowLabels : false
-        },
-        data: {
-          //labels: histLabels,
-          datasets: [{
-            fill: true,
-            data: histData,
-            backgroundColor:  movedEffectivelyColor,
-            borderColor: movedIneffectivelyColor
-          }]
-        }
+          scales: {
+               xAxes: [{
+                   ticks: {
+                       display: false
+                   }
+               }]
+           }
+         },
+         data: {
+           labels: histLabels,
+           datasets: [{
+             fill: true,
+             data: histData,
+             backgroundColor:  movedEffectivelyColor,
+             borderColor: movedIneffectivelyColor
+           }]
+         }
     });
 
   }).afterClose(function () {
@@ -158,9 +164,15 @@ function standardDeviation(data, keys) {
 
 function computeHistogram(data, sortedKeys, minKey, maxKey, numBuckets) {
   const keysInRange = filterKeysInRange(sortedKeys, minKey, maxKey);
-  const rangePerBucket = (maxKey - minKey) / numBuckets;
   const histLabels = [];
   const histData = [];
+
+  if (maxKey - minKey <= numBuckets) {
+    numBuckets = maxKey - minKey + 1;
+  }
+
+  const rangePerBucket = (maxKey - minKey) / numBuckets;
+
 
   for (let i = 0; i < numBuckets; i++) {
     const bucketMin = minKey + (i * rangePerBucket);
@@ -209,7 +221,7 @@ function filterKeysInRange(keys, min, max) {
 
 // Run from browser console to exercise code paths in this.
 function testAnalysis() {
-  const offsetCounts = {
+  const offsetCountsHighRange = {
     "new": 20,
     "dead": 20,
     "0": 10,
@@ -230,9 +242,15 @@ function testAnalysis() {
     "-20": 6
   };
 
+  const offsetCountsLowRange = {
+    "-10": 5,
+    "2": 20,
+    "30": 3
+  };
+
   const reporter = {
     updateStatus: function() {}
   };
 
-  displayEntropyAnalysis(offsetCounts, reporter);
+  displayEntropyAnalysis(offsetCountsLowRange, reporter);
 }
