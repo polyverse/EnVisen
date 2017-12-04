@@ -155,6 +155,11 @@ types:
               cases:
                 'bits::b32': u4
                 'bits::b64': u8
+        instances:
+          body:
+            io: _root._io
+            pos: offset
+            size: memsz
       # Elf(32|64)_Shdr
       section_header:
         seq:
