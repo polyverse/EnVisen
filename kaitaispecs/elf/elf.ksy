@@ -111,8 +111,9 @@ types:
             type: u4
             enum: ph_type
           # p_flags
-          - id: flags
+          - id: flags64
             type: u4
+            if: _root.bits == bits::b64
           # p_offset
           - id: offset
             type:
@@ -148,6 +149,10 @@ types:
               cases:
                 'bits::b32': u4
                 'bits::b64': u8
+          # p_flags
+          - id: flags32
+            type: u4
+            if: _root.bits == bits::b32
           # p_align
           - id: align
             type:
@@ -160,6 +165,8 @@ types:
             io: _root._io
             pos: offset
             size: memsz
+          flags:
+            value: _root.bits == bits::b32?flags32:flags64
       # Elf(32|64)_Shdr
       section_header:
         seq:

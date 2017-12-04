@@ -388,7 +388,9 @@ var Elf = (function() {
       }
       ProgramHeader.prototype._readLE = function() {
         this.type = this._io.readU4le();
-        this.flags = this._io.readU4le();
+        if (this._root.bits == Elf.Bits.B64) {
+          this.flags64 = this._io.readU4le();
+        }
         switch (this._root.bits) {
         case Elf.Bits.B32:
           this.offset = this._io.readU4le();
@@ -429,6 +431,9 @@ var Elf = (function() {
           this.memsz = this._io.readU8le();
           break;
         }
+        if (this._root.bits == Elf.Bits.B32) {
+          this.flags32 = this._io.readU4le();
+        }
         switch (this._root.bits) {
         case Elf.Bits.B32:
           this.align = this._io.readU4le();
@@ -440,7 +445,9 @@ var Elf = (function() {
       }
       ProgramHeader.prototype._readBE = function() {
         this.type = this._io.readU4be();
-        this.flags = this._io.readU4be();
+        if (this._root.bits == Elf.Bits.B64) {
+          this.flags64 = this._io.readU4be();
+        }
         switch (this._root.bits) {
         case Elf.Bits.B32:
           this.offset = this._io.readU4be();
@@ -481,6 +488,9 @@ var Elf = (function() {
           this.memsz = this._io.readU8be();
           break;
         }
+        if (this._root.bits == Elf.Bits.B32) {
+          this.flags32 = this._io.readU4be();
+        }
         switch (this._root.bits) {
         case Elf.Bits.B32:
           this.align = this._io.readU4be();
@@ -504,6 +514,14 @@ var Elf = (function() {
           }
           io.seek(_pos);
           return this._m_body;
+        }
+      });
+      Object.defineProperty(ProgramHeader.prototype, 'flags', {
+        get: function() {
+          if (this._m_flags !== undefined)
+            return this._m_flags;
+          this._m_flags = (this._root.bits == Elf.Bits.B32 ? this.flags32 : this.flags64);
+          return this._m_flags;
         }
       });
 
