@@ -23,7 +23,7 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
   }
 
   const totalGadgetsPrev = totalGadgets - offsetCounts["new"];
-
+  const percentNew = (offsetCounts["new"] * 100.0) /totalGadgetsPrev;
   const percentDead = (offsetCounts["dead"] * 100.0)/totalGadgetsPrev;
   const percentSurvived = (offsetCounts[0] * 100.0)/totalGadgetsPrev;
   const totalMoved = totalGadgetsPrev - (offsetCounts[0] + offsetCounts["dead"]);
@@ -62,7 +62,9 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
   reporter.updateStatus("Displaying analysis popover");
 
   movedKeys.sort(function(a, b) {return a-b;});
-  const [histLabels, histData] = computeHistogram(offsetCounts, movedKeys, movedKeys[0], movedKeys[movedKeys.length-1], 20);
+  const minOffset = movedKeys[0];
+  const maxOffset = movedKeys[movedKeys.length-1];
+  const [histLabels, histData] = computeHistogram(offsetCounts, movedKeys, minOffset, maxOffset, 20);
 
   picoModal({
       content: '<div id="entropyAnalysisContainer"/>',
@@ -75,8 +77,10 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
     analysisHtml.append(gadgetDistCanvas);
     const gadgetHistCanvas = $('<canvas class="chartCanvas" width="300" height="300"/>');
     analysisHtml.append(gadgetHistCanvas);
-    const save = $('<br/><a href="#" class="save">Save offset counts as JSON</a><br/>');
+    const save = $('<br/><a href="#" class="save">Save offset counts as JSON</a>');
     analysisHtml.append(save);
+    const resetZoom = $('<input type="button" class="save" value="Reset Table Zoom"/><br/>');
+    analysisHtml.append(resetZoom);
 
     save.click(function() {
         saveAs(new Blob([JSON.stringify(offsetCounts, null, 2)], {type: "application/json"})
@@ -92,7 +96,8 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
     const survivedLabel = "Survived",
           movedIneffectivelyLabel = "Moved Ineffectively",
           movedEffectivelyLabel = "Moved Effectively",
-          deadLabel = "Dead";
+          deadLabel = "Dead",
+          newLabel = "New";
 
     var gadgetDistCanvasCtx = gadgetDistCanvas.get(0).getContext('2d');
     // Draw basic survival pie chart
@@ -108,10 +113,10 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
         maintainAspectRatio: false,
       },
       data: {
-        labels: [deadLabel, movedEffectivelyLabel, movedIneffectivelyLabel, survivedLabel],
+        labels: [deadLabel, movedEffectivelyLabel, movedIneffectivelyLabel, survivedLabel, newLabel],
         datasets: [{
-          data: [percentDead, percentMovedEffectively, percentMoved - percentMovedEffectively, percentSurvived],
-          backgroundColor: [deadColor, movedEffectivelyColor, movedIneffectivelyColor, survivedColor]
+          data: [percentDead, percentMovedEffectively, percentMoved - percentMovedEffectively, percentSurvived, percentNew],
+          backgroundColor: [deadColor, movedEffectivelyColor, movedIneffectivelyColor, survivedColor, newColor]
         }],
       }
     });
@@ -134,7 +139,28 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
                        display: false
                    }
                }]
-           }
+           },
+          pan: {
+              enabled: true,
+              mode: 'x',
+              rangeMin: {
+                  x: minOffset,
+              },
+              rangeMax: {
+                  x: maxOffset,
+              }
+          },
+          zoom: {
+              enabled: true,
+              drag: true,
+              mode: 'x',
+              rangeMin: {
+                  x: minOffset,
+              },
+              rangeMax: {
+                  x: maxOffset,
+              }
+          }
          },
          data: {
            labels: histLabels,
@@ -145,6 +171,10 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
              borderColor: movedIneffectivelyColor
            }]
          }
+    });
+
+    resetZoom.click(function() {
+        gadgetHistChart.resetZoom();
     });
 
   }).afterClose(function () {
@@ -252,5 +282,5 @@ function testAnalysis() {
     updateStatus: function() {}
   };
 
-  displayEntropyAnalysis(offsetCountsLowRange, reporter);
+  displayEntropyAnalysis(offsetCountsHighRange, reporter);
 }
