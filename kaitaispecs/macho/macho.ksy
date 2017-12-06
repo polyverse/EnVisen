@@ -853,8 +853,7 @@ types:
           - id: items
             type: strz
             encoding: ascii
-            repeat: until
-            repeat-until: _ == ""
+            repeat: eos
       nlist_64:
         seq:
           - id: un
@@ -866,7 +865,19 @@ types:
           - id: desc
             type: u2
           - id: value
-            type: u8
+            type:
+              switch-on: _root.magic
+              cases:
+                'magic_type::macho_be_x64' : u8
+                'magic_type::macho_le_x64' : u8
+                'magic_type::macho_be_x86' : u4
+                'magic_type::macho_le_x86' : u4
+        instances:
+          name:
+            io: _parent.strs._io
+            pos: un
+            type: strz
+            encoding: ascii
         -webide-representation: "un={un} type={type} sect={sect} desc={desc} value={value}"
   dysymtab_command:
     seq:
