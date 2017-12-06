@@ -226,15 +226,150 @@ types:
                 'bits::b32': u4
                 'bits::b64': u8
         instances:
+          name:
+            io: _root.header.header_name_strings._io
+            pos: name_offset
+            type: strz
+            encoding: ASCII
           body:
             io: _root._io
             pos: offset
             size: size
-          name:
-            io: _root.header.strings._io
-            pos: name_offset
-            type: strz
-            encoding: ASCII
+          parsed:
+            io: _root._io
+            pos: offset
+            size: size
+            type:
+              switch-on: type
+              cases:
+                'sh_type::progbits'      : blob_section
+                'sh_type::symtab'        : symtab_section
+                'sh_type::strtab'        : strtab_section
+                'sh_type::rela'          : rela_section
+                'sh_type::hash'          : blob_section
+                'sh_type::dynamic'       : blob_section
+                'sh_type::note'          : blob_section
+                'sh_type::nobits'        : blob_section
+                'sh_type::rel'           : rel_section
+                'sh_type::shlib'         : blob_section
+                'sh_type::dynsym'        : symtab_section
+                'sh_type::init_array'    : blob_section
+                'sh_type::fini_array'    : blob_section
+                'sh_type::preinit_array' : blob_section
+                'sh_type::group'         : blob_section
+                'sh_type::symtab_shndx'  : blob_section
+            if: type != sh_type::null_type and type != sh_type::nobits and size > 0
+        types:
+          blob_section:
+            seq:
+              - id: bytes
+                size-eos: true
+          symtab_section:
+            seq:
+              - id: symbols
+                type:
+                  switch-on: _root.bits
+                  cases:
+                    'bits::b32': symbol32
+                    'bits::b64': symbol64
+                repeat: eos
+          strtab_section:
+            seq:
+              - id: strings
+                type: strings_struct
+          rel_section:
+            seq:
+              - id: relocations
+                type:
+                  switch-on: _root.bits
+                  cases:
+                    'bits::b32': rel32
+                    'bits::b64': rel64
+                repeat: eos
+          rela_section:
+            seq:
+              - id: relocations
+                type:
+                  switch-on: _root.bits
+                  cases:
+                    'bits::b32': rela32
+                    'bits::b64': rela64
+                repeat: eos
+          symbol32:
+            seq:
+              - id: name_offset
+                type: u4
+              - id: value
+                type: u4
+              - id: size
+                type: u4
+              - id: info
+                type: sym_info
+              - id: other
+                type: u1
+              - id: shndx
+                type: u2
+                enum: symbol_section_index
+          symbol64:
+            seq:
+              - id: name_offset
+                type: u4
+              - id: info
+                type: sym_info
+              - id: other
+                type: u1
+              - id: shndx
+                type: u2
+                enum: symbol_section_index
+              - id: value
+                type: u8
+              - id: size
+                type: u8
+          sym_info:
+            seq:
+              - id: info
+                type: u1
+            instances:
+              bind:
+                value: info >> 4
+                enum: symbol_bind
+              type:
+                value: info & 0xf
+                enum: symbol_type
+          rel32:
+            seq:
+              - id: addr
+                type: u4
+              - id: info
+                type: u4
+            instances:
+              sym_tab_index:
+                value: info >> 8
+              type:
+                value: info & 0xff
+          rel64:
+            seq:
+              - id: addr
+                type: u8
+              - id: info
+                type: u8
+            instances:
+              sym_tab_index:
+                value: info >> 32
+              type:
+                value: info & 0xffffffff
+          rela32:
+            seq:
+              - id: rel
+                type: rel32
+              - id: addend
+                type: s4
+          rela64:
+            seq:
+              - id: rel
+                type: rel64
+              - id: addend
+                type: s8
       strings_struct:
         seq:
           - id: entries
@@ -254,7 +389,7 @@ types:
         repeat-expr: qty_section_header
         size: section_header_entry_size
         type: section_header
-      strings:
+      header_name_strings:
         pos: section_headers[section_names_idx].offset
         size: section_headers[section_names_idx].size
         type: strings_struct
@@ -398,3 +533,128 @@ enums:
     0x2: pf_w
     0x4: pf_r
     0xf0000000: pf_maskproc
+  symbol_bind:
+    0: local
+    1: global
+    2: weak
+  symbol_type:
+    0: no_type
+    1: object
+    2: func
+    3: section
+    4: file
+  symbol_section_index:
+    0      : undef
+    0xff20 : livepatch
+    0xfff1 : abs
+    0xfff2 : common
+  relocation_types_sparc_32:
+    0: sparc_none
+    1: sparc_8
+    2: sparc_16
+    3: sparc_32
+    4: sparc_disp8
+    5: sparc_disp16
+    6: sparc_disp32
+    7: sparc_wdisp30
+    8: sparc_wdisp22
+    9: sparc_hi22
+    10: sparc_22
+    11: sparc_13
+    12: sparc_lo10
+    13: sparc_got10
+    14: sparc_got13
+    15: sparc_got22
+    16: sparc_pc10
+    17: sparc_pc22
+    18: sparc_wplt30
+    19: sparc_copy
+    20: sparc_glob_dat
+    21: sparc_jmp_slot
+    22: sparc_relative
+    23: sparc_ua32
+    24: sparc_plt32
+    25: sparc_hiplt22
+    26: sparc_loplt10
+    27: sparc_pcplt32
+    28: sparc_pcplt22
+    29: sparc_pcplt10
+    30: sparc_10
+    31: sparc_11
+    34: sparc_hh22
+    35: sparc_hm10
+    36: sparc_lm22
+    37: sparc_pc_hh22
+    38: sparc_pc_hm10
+    39: sparc_pc_lm22
+    40: sparc_wdisp16
+    41: sparc_wdisp19
+    43: sparc_7
+    44: sparc_5
+    45: sparc_6
+    48: sparc_hix22
+    49: sparc_lox10
+    50: sparc_44
+    51: sparc_m44
+    52: sparc_l44
+    53: sparc_register
+    55: sparc_ua16
+    80: sparc_gotdata_hix22
+    81: sparc_gotdata_lox10
+    82: sparc_gotdata_op_hix22
+    83: sparc_gotdata_op_lox10
+    84: sparc_gotdata_op
+    86: sparc_size_32
+    88: sparc_sparc_wdisp10
+  relocation_types_sparc_64:
+    9: sparc_hi22
+    20: sparc_glob_dat
+    22: sparc_relative
+    32: sparc_64
+    33: sparc_olo10
+    46: sparc_disp64
+    47: sparc_plt64
+    53: sparc_register
+    54: sparc_ua64
+    85: sparc_h34
+    87: sparc_size64
+  relocation_types_x86_32:
+    0: x86_386_none
+    1: x86_386_32
+    2: x86_386_pc32
+    3: x86_386_got32
+    4: x86_386_plt32
+    5: x86_386_copy
+    6: x86_386_glob_dat
+    7: x86_386_jmp_slot
+    8: x86_386_relative
+    9: x86_386_gotoff
+    10: x86_386_gotpc
+    11: x86_386_32plt
+    20: x86_386_16
+    21: x86_386_pc16
+    22: x86_386_8
+    23: x86_386_pc8
+    38: x86_386_size32
+  relocation_types_x86_64:
+    0: amd64_none
+    1: amd64_64
+    2: amd64_pc32
+    3: amd64_got32
+    4: amd64_plt32
+    5: amd64_copy
+    6: amd64_glob_dat
+    7: amd64_jump_slot
+    8: amd64_relative
+    9: amd64_gotpcrel
+    10: amd64_32
+    11: amd64_32s
+    12: amd64_16
+    13: amd64_pc16
+    14: amd64_8
+    15: amd64_pc8
+    24: amd64_pc64
+    25: amd64_gotoff64
+    26: amd64_gotpc32
+    32: amd64_size32
+    33: amd64_size64

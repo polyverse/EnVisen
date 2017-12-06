@@ -2,7 +2,6 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     const ks = new KaitaiStream(dataArray, 0)
     const elf = new Elf(ks)
     reporter.updateStatus('Analysing Elf data...');
-
     options = setElfDefaults(options, elf);
 
     elfElem.append(
@@ -108,10 +107,10 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
     });
 
     reporter.updateStatus("Converting ELF program segments " +
-      "into struct for ROP finder to work in a Worker process..<br/>");
+      "into struct for ROP finder to work in a Worker process.");
 
-    var sections = [];
-    for (var phi in elf.header.programHeaders) {
+    const sections = [];
+    for (let phi in elf.header.programHeaders) {
       var ph = elf.header.programHeaders[phi];
       if (ph.flags & Elf.PhFlags["PF_X"]){
 
@@ -130,7 +129,29 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
       }
     }
 
-    return [sections, [], options];
+    reporter.updateStatus("Looking for exported symbols...");
+    let symbols = [];
+
+    const [dynsym, dynstr] = getSymbolSections(elf.header.sectionHeaders);
+    if (typeof(dynsym) !== 'undefined' && typeof(dynstr) !== 'undefined') {
+      const stringsBody = dynstr.body;
+      reporter.updateStatus("Found allocatable symbol table (.dynsym)");
+      for (let si in dynsym.parsed.symbols) {
+          const sym = dynsym.parsed.symbols[si];
+          const name = KaitaiStream.bytesToStr(stringsBody.slice(sym.nameOffset, stringsBody.indexOf(0, sym.nameOffset)), "ASCII");
+          if (name != "") {
+            const symbol = {
+              vaddr: sym.value.toString(16),
+              gadget: name,
+              type: "symbol"
+            };
+            symbols.push(symbol);
+          }
+      }
+      reporter.updateStatus("Found " + symbols.length + " symbols exported");
+    }
+
+    return [sections, symbols, options];
 }
 
 function setElfDefaults(options, elf) {
@@ -149,19 +170,30 @@ function setElfDefaults(options, elf) {
   return options;
 }
 
+function getSymbolSections(shdrs) {
+  var dynsym, strtab, dynstr
+  for (let shi in shdrs) {
+    var sh = shdrs[shi];
+    if (sh.name == ".dynsym") {
+      dynsym = sh;
+    }
+    else if (sh.name == ".strtab") {
+      strtab = sh;
+    }
+    else if (sh.name == ".dynstr") {
+      dynstr = sh;
+    }
+  }
 
-/*
-0: "NOT_SET",
-2: "SPARC",
-3: "X86",
-8: "MIPS",
-20: "POWERPC",
-40: "ARM",
-42: "SUPERH",
-50: "IA_64",
-62: "X86_64",
-183: "AARCH64",
-*/
+  if (typeof(dynsym) !== 'undefined') {
+    //look for startab or dynstr
+    if (typeof(dynstr) !== 'undefined') {
+      return [dynsym, dynstr];
+    } else {
+      return [dynsym, strtab];
+    }
+  }
+}
 
 function elfToArch(elf) {
   switch (elf.header.machine) {
