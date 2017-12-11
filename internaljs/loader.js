@@ -29,7 +29,7 @@ function attachVisualizer(domElem, index) {
       '<span class="file-title" id="file-title' + index + '">'+title+'</span>' +
       getHelpButton(fileHelpText) + '</br>' +
       '<table style="width: 100%;"><tr><td style="padding-right: 4px;">' +
-      '<input class="url" type="text" id="url' + index + '" value="' + sampleUrls[index] +  '" style="width: 500px;"/>' +
+      '<input class="url" type="text" id="url' + index + '" value="' + sampleUrls[index] +  '" style="width: 300px;"/>' +
       '<input type="button" id="loadUrl' + index + '" value="Load from URL"/></br>' +
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
