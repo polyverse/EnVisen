@@ -70,7 +70,8 @@ function findRopThroughWorker(sections, symbols, filename, options, ropElem, rep
         arch: options.arch,
         bits: options.bits,
         endian: options.endian,
-        thumb: options.thumb
+        thumb: options.thumb,
+        depth: options.depth
       });
 
       worker.onmessage = function(e) {
@@ -98,7 +99,7 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
   const expando = $('<a href="#">Show/Hide ROP Table</a>');
   ropElem.append(expando);
 
-  const save = $('<a href="#" class="save">(Save as JSON)</a><br/>');
+  const save = $('<a href="#" class="save">(Save gadget table as JSON)</a><br/>');
   ropElem.append(save);
 
   const gadgetsWrapper = $('<div class="expander">');
@@ -361,4 +362,70 @@ function computeDeadGadgets(offsetCounts, PrevGadgetAddrs, newGadgetAddrs) {
   }
 
   offsetCounts["dead"] = deadCount;
+}
+
+function stripParsedBinary(obj) {
+  if (typeof(obj) !== 'object') {
+    return obj;
+  }
+
+  let isArray = false;
+  const strippedObject = {};
+  const strippedArray = [];
+  if (obj.constructor.toString().includes('Array')) {
+    isArray = true;
+  }
+  const properties = props(obj);
+  for (let fi in properties) {
+    const fieldName = properties[fi];
+    //private members
+    if (fieldName.startsWith("_")) {
+      continue;
+    }
+
+    try {
+      const field = obj[fieldName];
+      //strip out functions
+      if (typeof(field) === 'function') {
+        continue;
+      }
+
+      var strippedField;
+      if (typeof(field) === 'object') {
+        const constructorStr = obj[field].constructor.toString();
+        //strip out raw byte arrays
+        if (constructorStr.includes('Uint') && constructorStr.includes('Array')) {
+          continue;
+        }
+        strippedField = stripParsedBinary(field);
+      } else {
+        strippedField = field;
+      }
+
+      if (isArray) {
+        strippedArray.push(strippedField);
+      } else {
+        strippedObject[field] = strippedField;
+      }
+    } catch (e) {
+      console.log("Exception " + e + " when parsing field " + fieldName + " on object " + obj);
+    }
+  }
+
+  if (isArray) {
+    return strippedArray;
+  } else {
+    return strippedObject;
+  }
+}
+
+function props(obj) {
+    var p = [];
+    for (; obj != null; obj = Object.getPrototypeOf(obj)) {
+        var op = Object.getOwnPropertyNames(obj);
+        for (var i=0; i<op.length; i++)
+            if (p.indexOf(op[i]) == -1)
+                 p.push(op[i]);
+    }
+    return p;
 }

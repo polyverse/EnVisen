@@ -21,6 +21,13 @@ function analyzeElf(dataArray, options, elfElem, reporter) {
       expansionDiv.toggle();
     });
 
+    const save = $('<a href="#" class="save">(Save ELF structs as JSON)</a><br/>');
+    elfElem.append(save);
+    save.click(function(){
+      saveAs(new Blob([JSON.stringify(stripParsedBinary(elf), null, 2)], {type: "application/json"})
+        , "elf.json");
+    });
+
     expansionDiv.append('<H5>Program Headers</H5>');
     var tableWrapper = $('<div class="clusterize-scroll"/>');
     expansionDiv.append(tableWrapper);

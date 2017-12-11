@@ -6,7 +6,7 @@ self.importScripts("../externaljs/capstone.min.js");
  onmessage = function (e) {
    const arch = resolveArch(e.data.arch);
    const mode = resolveMode(arch, e.data.bits, e.data.endian, e.data.thumb);
-   const gadgets = getAllGadgets(e.data.sections, arch, mode);
+   const gadgets = getAllGadgets(e.data.sections, arch, mode, e.data.depth);
    postMessage({status: "Returning to main thread " + gadgets.length +
     "gadgets.", gadgets: gadgets});
    close();
@@ -91,14 +91,14 @@ function attachEndianToMode(mode, endian) {
 /************************* Gadget Finding ****************************************************/
 
 
-function getAllGadgets(sections, arch, mode) {
+function getAllGadgets(sections, arch, mode, depth) {
   let gadgets = [];
 
   for (si in sections) {
     const offByOne = parseInt(si)+1;
     postMessage({status: "==> Finding gadgets in section " + offByOne + " of " + sections.length});
     const section = sections[si];
-    const localgadgets = getAllGadgetsInSection(section, arch, mode);
+    const localgadgets = getAllGadgetsInSection(section, arch, mode, depth);
     postMessage({status: "==> Found " +localgadgets.length+ " gadgets in section"});
     gadgets = gadgets.concat(localgadgets);
   }
@@ -121,28 +121,28 @@ function getAllGadgets(sections, arch, mode) {
 
 
 
-function getAllGadgetsInSection(section, arch, mode) {
+function getAllGadgetsInSection(section, arch, mode, depth) {
    var gadgets = [];
 
    postMessage({status: "====> Looking for ROP gadgets out of ROP/JOP/SYS gadget types"});
-   var ropGadgets = addROPGadgets(section, arch, mode);
+   var ropGadgets = addROPGadgets(section, arch, mode, depth);
    gadgets = gadgets.concat(ropGadgets);
    postMessage({status: "====> Found " + ropGadgets.length + " ROP gadgets."});
 
    postMessage({status: "====> Looking for JOP gadgets out of ROP/JOP/SYS gadget types"});
-   var jopGadgets = addJOPGadgets(section, arch, mode);
+   var jopGadgets = addJOPGadgets(section, arch, mode, depth);
    postMessage({status: "====> Found " + jopGadgets.length + " JOP gadgets."});
    gadgets = gadgets.concat(jopGadgets);
 
    postMessage({status: "====> Looking for SYS gadgets out of ROP/JOP/SYS gadget types"});
-   var sysGadgets = addSYSGadgets(section, arch, mode);
+   var sysGadgets = addSYSGadgets(section, arch, mode, depth);
    postMessage({status: "====> Found " + sysGadgets.length + " SYS gadgets."});
    gadgets = gadgets.concat(sysGadgets);
    return gadgets;
 }
 
 
-function addROPGadgets(section, arch, mode) {
+function addROPGadgets(section, arch, mode, depth) {
     let gadgets = [];
     if (arch == cs.ARCH_X86) {
       gadgets = [
@@ -178,12 +178,12 @@ function addROPGadgets(section, arch, mode) {
     }
 
     if (gadgets.length > 0) {
-      return gadgetsFinding(section, gadgets, arch, mode);
+      return gadgetsFinding(section, gadgets, arch, mode, 0, depth);
     }
     return gadgets;
 }
 
-function addJOPGadgets(section, arch, mode) {
+function addJOPGadgets(section, arch, mode, depth) {
   let gadgets = [];
   if (arch  == cs.ARCH_X86) {
     gadgets = [
@@ -233,13 +233,13 @@ function addJOPGadgets(section, arch, mode) {
   }
 
   if (gadgets.length > 0) {
-    return gadgetsFinding(section, gadgets, arch, mode);
+    return gadgetsFinding(section, gadgets, arch, mode, 0, depth);
   }
   return gadgets;
 
 }
 
- function addSYSGadgets(section, arch, mode) {
+ function addSYSGadgets(section, arch, mode, depth) {
   let gadgets = [];
   if (arch == cs.ARCH_X86) {
     gadgets = [
@@ -278,15 +278,16 @@ function addJOPGadgets(section, arch, mode) {
    }
 
   if (gadgets.length > 0) {
-    return gadgetsFinding(section, gadgets, arch, mode);
+    return gadgetsFinding(section, gadgets, arch, mode, 0, depth);
   }
 
   return gadgets;
 
 }
 
- function gadgetsFinding(section, gadgets, arch, mode, offset) {
+ function gadgetsFinding(section, gadgets, arch, mode, offset, depth) {
      var offset = offset || 0;
+     var depth = depth || 10
      const C_OP    = 0;
      const C_SIZE  = 1;
      const C_ALIGN = 2;
@@ -317,7 +318,7 @@ function addJOPGadgets(section, arch, mode) {
 
            const ref = allRefRet[refi];
            //ROPgadget's depth option goes here...
-           for (let i = 0; i < 10; i++) {
+           for (let i = 0; i < depth; i++) {
                if ((section["vaddr"]+ref-(i*gad[C_ALIGN])) % gad[C_ALIGN] == 0) {
                    const opcode = section["opcodes"].slice(ref-(i*gad[C_ALIGN]),ref+gad[C_SIZE]);
                    let decodes = [];

@@ -21,6 +21,14 @@ function analyzeMachO(dataArray, options,  machoElem, reporter) {
       expansionDiv.toggle();
     });
 
+    const save = $('<a href="#" class="save">(Save MachO structs as JSON)</a><br/>');
+    machoElem.append(save);
+    save.click(function(){
+      saveAs(new Blob([JSON.stringify(stripParsedBinary(macho), null, 2)], {type: "application/json"})
+        , "macho.json");
+    });
+
+
     expansionDiv.append('<H5>Load Commands</H5>');
     var tableWrapper = $('<div class="clusterize-scroll"/>');
     expansionDiv.append(tableWrapper);

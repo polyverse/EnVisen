@@ -21,6 +21,13 @@ function analyzePe(dataArray, options, peElem, reporter) {
     expansionDiv.toggle();
   });
 
+  const save = $('<a href="#" class="save">(Save PE structs as JSON)</a><br/>');
+  peElem.append(save);
+  save.click(function(){
+    saveAs(new Blob([JSON.stringify(stripParsedBinary(macho), null, 2)], {type: "application/json"})
+      , "pe.json");
+  });
+
   expansionDiv.append('<H5>Sections</H5>');
   var tableWrapper = $('<div class="clusterize-scroll"/>');
   expansionDiv.append(tableWrapper);

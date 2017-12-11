@@ -8,6 +8,11 @@ function attachVisualizers() {
     })
 }
 
+const sampleUrls = [
+  "/samples/centos7.4/libc-2.17.so",
+  "/samples/centos7.4/libc-2.17-scrambled.so",
+];
+
 function attachVisualizer(domElem, index) {
 
     const rootElem = $(domElem)
@@ -23,10 +28,12 @@ function attachVisualizer(domElem, index) {
     '<div class="file-collector" id="file-collector' + index + '">' +
       '<span class="file-title" id="file-title' + index + '">'+title+'</span>' +
       getHelpButton(fileHelpText) + '</br>' +
-      '<table><tr><td>' +
+      '<table style="width: 100%;"><tr><td style="padding-right: 4px;">' +
+      '<input class="url" type="text" id="url' + index + '" value="' + sampleUrls[index] +  '" style="width: 500px;"/>' +
+      '<input type="button" id="loadUrl' + index + '" value="Load from URL"/></br>' +
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
-      '</td><td style="vertical-align: top;">' +
+      '</td><td style="vertical-align: top; padding-left: 4px;  style="width: fit-content;">' +
       '<span>Architecture:</span><select id="arch' + index + '" value="0">' +
         '<option>Auto Detect</option>' +
         '<option>x86</option>' +
@@ -52,6 +59,8 @@ function attachVisualizer(domElem, index) {
         getHelpButton('The word layout to disassemble with. Must not be auto detect for RAW binaries.')  + '<br/>' +
       '<span>Base Offset:</span><input type="text" id="base_offset' + index + '" value="0"></input>' +
       getHelpButton('Hexadecimal integer that will offset all instructions and symbols (simulate ASLR).')  + '<br/>' +
+      '<span>Depth:</span><input type="text" id="depth' + index + '" value="10"></input>' +
+      getHelpButton('Decimal integer: Maximum Depth/Length of gadget to find.')  + '<br/>' +
       '</td></tr></table>' +
     '</div>' +
 
@@ -80,6 +89,8 @@ function attachVisualizer(domElem, index) {
     dropZone.on('dragover', handleDragOver);
     dropZone.on('drop', getFileDropHandler(getFileProcessor(index)));
 
+    $('#loadUrl' + index).click(getUrlLoader(index));
+
     if (index > 0) {
       $('#file-collector'+index).block({
         message: '<span class="blocked">Analyze the first file to unblock comparison.</span>',
@@ -87,6 +98,22 @@ function attachVisualizer(domElem, index) {
         overlayCSS:  { opacity:         0.2, cursor: 'not-allowed' }
       });
     }
+}
+
+function getUrlLoader(index) {
+  return function(evt) {
+    const url = $("#url" + index).val();
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'blob';
+    request.onload = function() {
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(request.response);
+        const processBlob = getBlobProcessor(index)
+        processBlob(reader);
+    };
+    request.send();
+  }
 }
 
 function handleDragOver(evt) {
@@ -113,7 +140,17 @@ function getFileDropHandler(processFiles) {
 }
 
 function getFileProcessor(index) {
-    return function processFiles(files) {
+  return function(files) {
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(files[0]);
+    const blobProc = getBlobProcessor(index);
+    blobProc(reader, files[0].name);
+  }
+}
+
+function getBlobProcessor(index) {
+    return function(reader, fileName) {
+        var fileName = fileName || "";
         const fc = $('#file-collector' + index);
         fc.toggle();
         const fileElem = $('#filename' + index);
@@ -182,13 +219,6 @@ function getFileProcessor(index) {
         });
         progressLogs.toggle();
 
-        if (files.length != 1) {
-            fileElem.innerHTML = 'Number of files selected must be exactly 1. We found: ' + files.length;
-            return;
-        }
-
-        const f = files[0];
-        const reader = new FileReader();
         reader.onabort = function(event) {
             reporter.updateStatus('Aborted file loading!');
         }
@@ -214,11 +244,21 @@ function getFileProcessor(index) {
           const bits = $("#bits" + index).val().toLowerCase();
           const endian = $("#endian" + index).val().toLowerCase();
 
+          const depthStr = $("#depth" + index).val().toLowerCase();
+          let depth = 10;
+          try {
+            depth = parseInt(depthStr, 10);
+          } catch (e) {
+            reporter.updateStatus("Error occurred parsing offset " + depthStr + " as a Decimal string. Defaulting to 10.");
+            offset = 10;
+          }
+
           const options = {
             offset,
             arch,
             bits,
-            endian
+            endian,
+            depth
           };
 
           if (options.arch == "thumb") {
@@ -226,11 +266,10 @@ function getFileProcessor(index) {
             options.thumb = true;
           }
 
-          analyzeResultErrorCapture(index, f.name, event.target.result, options, analysisElem, reporter);
+          analyzeResultErrorCapture(index, fileName, event.target.result, options, analysisElem, reporter);
         }
 
-        fileElem.append('<strong>' + escape(f.name) + '</strong>');
-        reader.readAsArrayBuffer(f);
+        fileElem.append('<strong>' + escape(fileName) + '</strong>');
     }
 }
 
