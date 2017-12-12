@@ -1,22 +1,54 @@
 # EnVisen User Guide
 
-## Introduction to EnVisen capabilities
+EnVisen dissects your binaries in the convenience of your web browser!
 
-EnVisen (Short for *En*tropy *Vis*ualizer), is a tool for binary extraction, ROP/JOP analysis, 
-and symbol parsing. It does what a few distinct tools do today, and not all of them are available on
-all platforms. EnVisen supports Elf (Linux, BSD, Solaris, etc.), MachO (Mach kernel, MacOS X, etc.), 
-Portable Executable (Windows), and RAW (Kernels, ROMs) binary formats for nearly all major architectures.
+## Hello World
 
-EnVisen is easy to install, and trivial to run, being purely client-side in-browser with zero external 
-dependencies, and works with full fidelity completely offline.
+Visit EnVisen at https://analyze.polyverse.io.
 
-## Ready to Use
+![](screenshots/envisen_base.png)
 
-We host EnVisen at https://analyze.polyverse.io. This document will use that version as the 
-basis for all guidance and screenshots.
+Click on the button "Load from URL" in the Base File section.
 
-## Getting Started: Dissecting a File
+![](screenshots/envisen_one_file.png)
 
-The best way to get started with EnVisen is to dump a file on it. You should see a File Chooser, 
-as well as a drop area where you may drag-drop a file from your local machine.
+Now the Compare File section gets unblocked. Click on "Load from URL"
+on this section as well.
 
+![](screenshots/envisen_two_files.png)
+
+You should see the button "Entropy Analysis" open up. Click on that.
+
+![](screenshots/envisen_entropy_analysis.png)
+
+You just dissected Libc from CentOS 7.4, extracted all exported symbols
+from the ELF header, disassembled the executable sections, and found
+Return Oriented Programming gadgets. You then compared all that information
+with another binary (a scrambled variant) and made a comparison.
+
+## The Entropy Quality Index
+
+The [Entropy Index](entropy-index.md) is a one-dimensional measure
+of difficulty of crafting a memory-based control-flow attack against the Compared binary
+based on how much entropy there exists between the Base and Compared files.
+
+This tells us how effective scrambling was in any particular instance.
+
+## Reading the Chart
+
+![](screenshots/envisen_gadget_fate.png)
+
+This chart displays the fate of ROP gadgets from the Base Binary to the
+Compared Binary.
+
+The Blue pie section describes gadgets that never existed
+in the Base Binary at all.
+
+The Green pie section describes gadgets that
+existed in Base but not in Compared (this they were killed.)
+
+The Red section are gadgets that existed in both binaries.
+
+The yellow sections describe gadgets that were moved. Some effectively (thus
+neutralizing any chance that their moved positions could be predirected)
+and others ineffectively (thus their movement is relatively low-cost to guess.)
