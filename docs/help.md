@@ -1,6 +1,6 @@
 # EnVisen User Guide
 
-EnVisen dissects your binaries in the convenience of your web browser!
+EnVisen (pronounced *envision*) dissects your binaries in the convenience of your web browser!
 
 ## Hello World
 
