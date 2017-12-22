@@ -21,7 +21,7 @@ function attachVisualizer(domElem, index) {
     const fileHelpText = '<p>Select a file or drag/drop a file on the selector  ' +
     'below to begin analysis.</p>' +
     '<p>Provide any 32/64 bit ELF/MachO/PE binary across x86/ARM/Sparc/MIPS/PowerPC ' +
-    'to get generate a ROP gadget table from it (savable as JSON). ' +
+    'to generate an ROP gadget table from it (savable as JSON). ' +
     'You may also provide a saved ROP JSON to avoid reparsing the same binary.</p>';
 
     const visualizerHtml =
