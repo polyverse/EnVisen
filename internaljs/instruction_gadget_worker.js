@@ -8,7 +8,7 @@ self.importScripts("../externaljs/capstone.min.js");
    const mode = resolveMode(arch, e.data.bits, e.data.endian, e.data.thumb);
    const gadgets = getAllGadgets(e.data.sections, arch, mode, e.data.depth);
    postMessage({status: "Returning to main thread " + gadgets.length +
-    "gadgets.", gadgets: gadgets});
+    " gadgets.", gadgets: gadgets});
    close();
  }
 
