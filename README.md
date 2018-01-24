@@ -11,6 +11,16 @@ of usage and portability across platforms.
 # Get Started:
 Visit the hosted version here: https://analyze.polyverse.io/
 
+## Blog posts that use the tool
+
+[How Polymorphic Linux stops attacks when everything else has failed](https://blog.polyverse.io/how-polymorphic-linux-stops-attacks-when-everything-else-has-failed-cd8d6b2d669f)
+
+[ASLR Simplified](https://blog.polyverse.io/why-aslr-stops-rop-attacks-8e961ca6951e)
+
+[Fun with binaries](https://blog.polyverse.io/fun-with-binaries-4361128556a4)
+
+[Let's craft some real attacks](https://blog.polyverse.io/lets-craft-some-real-attacks-8efac7b3df90)
+
 # Join the Slack Channel
 https://join.slack.com/t/envisen/shared_invite/enQtMjk2MDEzNjI3MDQ3LTNjNmI3MzYzNTMwMGRmZmMxZTc0M2NkNDg2MDFlY2U0NjllZTFkZThmNGVjMWZjZjJiNTBhZDQ1M2Y1YjQ2OTI
 
