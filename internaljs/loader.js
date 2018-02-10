@@ -34,6 +34,10 @@ function attachVisualizer(domElem, index) {
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
       '</td><td style="vertical-align: top; padding-left: 4px;  style="width: fit-content;">' +
+        '<span>File Format:</span><select id="format' + index + '" value="0">' +
+        '<option>Auto Detect</option>' +
+        '</select>' +
+        getHelpButton('The file format to parse as (especially for RAW executables, or bootable/compressed linux kernels.') + '<br/>' +
       '<span>Architecture:</span><select id="arch' + index + '" value="0">' +
         '<option>Auto Detect</option>' +
         '<option>x86</option>' +
@@ -71,7 +75,6 @@ function attachVisualizer(domElem, index) {
       'Log of activities for this file'
       +'</strong><br/></div>' +
     '</div>' +
-
     '<div id="analysis' + index + '" style="display:none"></div>';
 
     // Check for the various File API support.
@@ -81,6 +84,11 @@ function attachVisualizer(domElem, index) {
     }
 
     rootElem.append(visualizerHtml)
+
+    const formatElem = $('#format' + index);
+    for (let format in ParserFuncs) {
+        formatElem.append('<option>' + format + '</option>');
+    }
 
     $('#file' + index).on('change', getFileSelectHandler(getFileProcessor(index)));
 
@@ -240,6 +248,7 @@ function getBlobProcessor(index) {
             offset = 0;
           }
 
+          const format = $("#format" + index).val().toLowerCase();
           const arch = $("#arch" + index).val().toLowerCase();
           const bits = $("#bits" + index).val().toLowerCase();
           const endian = $("#endian" + index).val().toLowerCase();
@@ -254,6 +263,7 @@ function getBlobProcessor(index) {
           }
 
           const options = {
+            format,
             offset,
             arch,
             bits,
