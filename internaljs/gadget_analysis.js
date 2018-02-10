@@ -6,6 +6,36 @@ let TablesToRows = {};
 let TablesToGadgets = {};
 let PrevGadgetAddrs = {};
 
+function FormatParseError (e) {
+    this.name = "FormatParseError"
+    this.message = "Error parsing as a format: " + e;
+}
+
+FormatParseError.prototype = new Error();
+
+const ParserFuncs = {
+    "elf": {
+      "analyzer": analyzeElf,
+      "auto": true
+    },
+    "vmlinuz": {
+        "analyzer": analyzeVmlinuz,
+        "auto": false
+    },
+    "pe": {
+        "analyzer": analyzePe,
+        "auto": true
+    },
+    "macho": {
+        "analyzer": analyzeMachO,
+        "auto": true
+    },
+    "raw": {
+        "analyzer": analyzeRaw,
+        "auto": false
+    }
+};
+
 function analyzeResultErrorCapture(index, filename, dataArray, options, analysisElem, reporter) {
   const errorElem = $("<span/>")
   $(analysisElem).append(errorElem);
@@ -31,31 +61,45 @@ function analyzeResultErrorCapture(index, filename, dataArray, options, analysis
       }, 20);
       return;
     } else {
-      try {
-        reporter.updateStatus("Attempting to open as ELF....");
-        [sections, symbols, options] = analyzeElf(dataArray, options, formatElem, reporter);
-      } catch (e) {
-        reporter.updateStatus("Couldn't parse as ELF due to exception: " + e);
-        try {
-          reporter.updateStatus("Attempting to open as PE....");
-          [sections, symbols, options] = analyzePe(dataArray, options, formatElem, reporter);
-        } catch (e) {
-          reporter.updateStatus("Couldn't parse as PE due to exception: " + e);
-          try {
-            reporter.updateStatus("Attempting to open as MachO....");
-            [sections, symbols, options] = analyzeMachO(dataArray, options, formatElem, reporter);
-          } catch (e) {
-            reporter.updateStatus("Couldn't parse as MachO due to exception: " + e);
-            reporter.updateStatus("We've run out of file formats we understand. Treating this as a RAW file (like a kernel or bootloader).");
-            reporter.updateStatus("Attempting to parse as RAW binary....");
-            [sections, symbols, options] = analyzeRaw(dataArray, options, formatElem, reporter);
-          }
-        }
+
+      function parseForFormat(format) {
+          reporter.updateStatus("Attempting to open as " + format + "....");
+          [sections, symbols, options] = ParserFuncs[format]["analyzer"](dataArray, options, formatElem, reporter);
+          reporter.completedFileAnalysis();
+          findRopThroughWorker(sections, symbols, filename, options, ropElem, reporter)
       }
 
-      reporter.completedFileAnalysis();
-      findRopThroughWorker(sections, symbols, filename, options, ropElem, reporter)
-
+      if (options.format == "auto detect") {
+          reporter.updateStatus("Auto-detecting file format...");
+          for (let format in ParserFuncs) {
+              try {
+                  if (ParserFuncs[format]["auto"]) {
+                      parseForFormat(format);
+                      return;
+                  } else {
+                      reporter.updateStatus("Format " + format + " is not an auto-parse format. Please select it from the UI" +
+                          " if you want this file parsed as " + format + ".")
+                  }
+              } catch (e) {
+                  if (e instanceof FormatParseError) {
+                      reporter.updateStatus("Couldn't parse as " + format + " due to possible incorrect format. " +
+                          "Will continue with other formats. Exception: " + e);
+                  } else {
+                      reporter.updateStatus("Couldn't parse as " + format + " due to a non-format exception. " +
+                          "Abandoning Parse. Exception: " + e);
+                      return;
+                  }
+              }
+          }
+          reporter.updateStatus("We've run out of file formats we understand. Abandoning parse.");
+      } else {
+          reporter.updateStatus("Parsing file as " + options.format + " since that was selected.");
+          try {
+              parseForFormat(options.format);
+          } catch (e) {
+              reporter.updateStatus("Error when parsing file as " + options.format + ". Abandoning parse. Exception: " + e);
+          }
+      }
     }
 }
 

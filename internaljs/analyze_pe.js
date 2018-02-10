@@ -1,7 +1,16 @@
 function analyzePe(dataArray, options, peElem, reporter) {
 
   const ks = new KaitaiStream(dataArray, 0)
-  pe = new MicrosoftPe(ks)
+
+    var pe;
+    try {
+        pe = new MicrosoftPe(ks)
+    } catch (e) {
+        throw new FormatParseError(e);
+    }
+
+    debugger;
+
   options = setPEDefaults(options, pe);
 
   reporter.updateStatus('Analysing PE data...');
@@ -24,7 +33,7 @@ function analyzePe(dataArray, options, peElem, reporter) {
   const save = $('<a href="#" class="save">(Save PE structs as JSON)</a><br/>');
   peElem.append(save);
   save.click(function(){
-    saveAs(new Blob([JSON.stringify(stripParsedBinary(macho), null, 2)], {type: "application/json"})
+    saveAs(new Blob([JSON.stringify(stripParsedBinary(pe), null, 2)], {type: "application/json"})
       , "pe.json");
   });
 
@@ -69,7 +78,7 @@ function analyzePe(dataArray, options, peElem, reporter) {
     rows: rows
   });
 
-  reporter.updateStatus("Converting MachO program segments " +
+  reporter.updateStatus("Converting PE program segments " +
     "into struct for ROP finder to work in a Worker process..<br/>");
 
   let imageBase = 0;

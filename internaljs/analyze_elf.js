@@ -1,6 +1,13 @@
 function analyzeElf(dataArray, options, elfElem, reporter) {
     const ks = new KaitaiStream(dataArray, 0)
-    const elf = new Elf(ks)
+
+    var elf;
+    try {
+        elf = new Elf(ks)
+    } catch (e) {
+        throw new FormatParseError(e);
+    }
+
     reporter.updateStatus('Analysing Elf data...');
     options = setElfDefaults(options, elf);
 
@@ -200,6 +207,8 @@ function getSymbolSections(shdrs) {
       return [dynsym, strtab];
     }
   }
+
+  return [undefined, undefined];
 }
 
 function elfToArch(elf) {

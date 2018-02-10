@@ -1,6 +1,13 @@
 function analyzeMachO(dataArray, options,  machoElem, reporter) {
     const ks = new KaitaiStream(dataArray, 0)
-    const macho = new MachO(ks)
+
+    var macho;
+    try {
+        macho = new MachO(ks)
+    } catch (e) {
+        throw new FormatParseError(e);
+    }
+
     options = setMachODefaults(options, macho);
 
     reporter.updateStatus('Analysing MachO data...');
