@@ -1,17 +1,44 @@
 
 
+const sampleUrls = [
+    "/samples/ubuntu16.04.3/libc-2.23.so",
+    "/samples/ubuntu16.04.3/libc-2.23-scrambled.so",
+    "/samples/centos6/libc-2.12.so",
+    "/samples/centos7.0/libc-2.17.so",
+    "/samples/centos7.1/libc-2.17.so",
+    "/samples/centos7.2/libc-2.17.so",
+    "/samples/centos7.3/libc-2.17.so",
+    "/samples/centos7.4/libc-2.17.so",
+    "/samples/centos7.4/libc-2.17-scrambled.so",
+    "/samples/linux-kernels/vmlinux-3.10.0-693.17.1.el7.x86_64",
+    "/samples/linux-kernels/vmlinuz-3.10.0-693.17.1.el7.x86_64",
+    "/samples/linux-kernels/vmlinuz-3.10.0-693.11.6.el7.x86_64-scramble1",
+    "/samples/linux-kernels/vmlinuz-3.10.0-693.11.6.el7.x86_64-scramble2",
+    "/samples/mongoose/api_server1",
+    "/samples/mongoose/reverse_proxy",
+    "/samples/mongoose/echo_server",
+    "/samples/mongoose/api_server2"
+];
+
 function attachVisualizers() {
     const divs = $('div.binaryVisualizer');
     divs.empty();
+
+    if ($('#sample-urls').length == 0) {
+        const sampleUrlsList = $('<datalist id="sample-urls"></datalist>');
+        for (let idx in sampleUrls) {
+            const sampleUrl = sampleUrls[idx];
+            sampleUrlsList.append('<option>' + sampleUrl + '</option>');
+        }
+        $('body').append(sampleUrlsList);
+    }
+
     divs.each(function(index, domElem) {
         attachVisualizer(domElem, index);
     })
+
 }
 
-const sampleUrls = [
-  "/samples/centos7.4/libc-2.17.so",
-  "/samples/centos7.4/libc-2.17-scrambled.so",
-];
 
 function attachVisualizer(domElem, index) {
 
@@ -29,7 +56,7 @@ function attachVisualizer(domElem, index) {
       '<span class="file-title" id="file-title' + index + '">'+title+'</span>' +
       getHelpButton(fileHelpText) + '</br>' +
       '<table style="width: 100%;"><tr><td style="padding-right: 4px;">' +
-      '<input class="url" type="text" id="url' + index + '" value="' + sampleUrls[index] +  '" style="width: 300px;"/>' +
+      '<input class="url" list="sample-urls" type="text" id="url' + index + '" value="/samples/" style="width: 300px;"/>' +
       '<input type="button" id="loadUrl' + index + '" value="Load from URL"/></br>' +
       '<input class="file" type="file" id="file' + index + '"/>' +
       '<div class="drop-zone" id="drop-zone' + index + '">Drop file here</div>' +
@@ -84,6 +111,7 @@ function attachVisualizer(domElem, index) {
     }
 
     rootElem.append(visualizerHtml)
+
 
     const formatElem = $('#format' + index);
     for (let format in ParserFuncs) {
