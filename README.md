@@ -21,9 +21,9 @@ Visit the hosted version here: https://analyze.polyverse.io/
 
 [Let's craft some real attacks](https://blog.polyverse.io/lets-craft-some-real-attacks-8efac7b3df90)
 
-# Join the Slack Channel
-https://join.slack.com/t/envisen/shared_invite/enQtMjk2MDEzNjI3MDQ3LTNjNmI3MzYzNTMwMGRmZmMxZTc0M2NkNDg2MDFlY2U0NjllZTFkZThmNGVjMWZjZjJiNTBhZDQ1M2Y1YjQ2OTI
+# Find us on the Polymorphic Linux Slack channel
 
+https://join.slack.com/t/polymorphic-linux/shared_invite/enQtMjk2MDEzNjI3MDQ3LTNjNmI3MzYzNTMwMGRmZmMxZTc0M2NkNDg2MDFlY2U0NjllZTFkZThmNGVjMWZjZjJiNTBhZDQ1M2Y1YjQ2OTI
 
 ## Self hosting
 
