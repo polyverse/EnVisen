@@ -50,7 +50,11 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
   //subtract 2 for "dead" (dead gadgets) and "0" (surviving gadgets).
   reporter.updateStatus("==> Number of offsets gadgets moved to: " + movedKeys.length);
 
+  const startSDTime = performance.now();
   const sd = standardDeviation(offsetCounts, movedKeys);
+  const endSDTime = performance.now();
+  reporter.updateStatus("Time to compute Standard Deviation: " + (endSDTime - startSDTime));
+
   const scaledSd = sd/highestCount;
   reporter.updateStatus("==> Scaled Standard Deviation of move bucket counts: " + scaledSd);
 
@@ -64,7 +68,11 @@ function displayEntropyAnalysis(offsetCounts, reporter) {
   movedKeys.sort(function(a, b) {return a-b;});
   const minOffset = movedKeys[0];
   const maxOffset = movedKeys[movedKeys.length-1];
+
+  const startHistTime = performance.now();
   const [histLabels, histData] = computeHistogram(offsetCounts, movedKeys, minOffset, maxOffset, 20);
+  const endHistTime = performance.now();
+  reporter.updateStatus("Time to compute Histogram: " + (endHistTime - startHistTime));
 
   picoModal({
       content: '<div id="entropyAnalysisContainer"/>',

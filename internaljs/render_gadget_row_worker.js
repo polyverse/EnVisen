@@ -7,6 +7,11 @@ onmessage = function (e) {
 
 
 function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
+
+  var closestGadgetTime = 0;
+
+  const startRenderGadgetsTable = performance.now();
+
   const group=10000;
   let rows = [];
   const newGadgetsAddrs = {};
@@ -37,7 +42,11 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
     incrementNewGadetsAddrs(gadget);
 
     let className = ""
+      const startClosestGadgetTime = performance.now();
     const [closestAddr, closestOffset, found] = findClosestAddr(prevGadgetsAddrs[gadget.gadget], gadget.vaddr);
+      const endClosestGadgetTime = performance.now();
+      closestGadgetTime += (endClosestGadgetTime - startClosestGadgetTime);
+
     if (found) {
       incrementOffsetCounts(closestOffset);
       if (closestOffset == 0) {
@@ -64,7 +73,15 @@ function renderGadgetsTable(gadgets, prevGadgetsAddrs) {
       rows = [];
     }
   }
-  postMessage({finished: true, newGadgetsAddrs: newGadgetsAddrs, offsetCounts: offsetCounts});
+
+    const endRenderGadgetsTable = performance.now();
+
+    const perf = {
+        renderGadgetsTableTime: endRenderGadgetsTable - startRenderGadgetsTable,
+        closestGadgetTime: closestGadgetTime,
+    };
+
+    postMessage({finished: true, newGadgetsAddrs: newGadgetsAddrs, offsetCounts: offsetCounts, perf: perf});
 }
 
 function findClosestAddr(addrs, addr) {

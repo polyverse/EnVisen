@@ -352,8 +352,15 @@ function renderGadgetsTableInWorker(binInfo, jsonFileName, ropElem, reporter) {
         reporter.completedRop();
         const newGadgetAddrs = e.data.newGadgetsAddrs;
         offsetCounts = e.data.offsetCounts;
+
+        const startComputeDeadGadgetsTime = performance.now();
         computeDeadGadgets(offsetCounts, PrevGadgetAddrs, newGadgetAddrs);
+        const endComputeDeadGadgetsTime = performance.now();
+
         PrevGadgetAddrs = newGadgetAddrs;
+
+        e.data.perf.computeDeadGadgetsTime = (endComputeDeadGadgetsTime - startComputeDeadGadgetsTime);
+        reporter.updateStatus("Performance of Gadget rendering: " + JSON.stringify(e.data.perf, null, 2));
         setTimeout(drawTable, 20); //Call this async
       } else {
         reporter.updateStatus(e.data.status);
