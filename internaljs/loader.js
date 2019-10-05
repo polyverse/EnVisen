@@ -90,7 +90,7 @@ function attachVisualizer(domElem, index) {
         getHelpButton('The word layout to disassemble with. Must not be auto detect for RAW binaries.')  + '<br/>' +
       '<span>Base Offset:</span><input type="text" id="base_offset' + index + '" value="0"></input>' +
       getHelpButton('Hexadecimal integer that will offset all instructions and symbols (simulate ASLR).')  + '<br/>' +
-      '<span>Depth:</span><input type="text" id="depth' + index + '" value="10"></input>' +
+      '<span>Depth:</span><input type="text" id="depth' + index + '" value="3"></input>' +
       getHelpButton('Decimal integer: Maximum Depth/Length of gadget to find.')  + '<br/>' +
       '</td></tr></table>' +
     '</div>' +
@@ -282,11 +282,11 @@ function getBlobProcessor(index) {
           const endian = $("#endian" + index).val().toLowerCase();
 
           const depthStr = $("#depth" + index).val().toLowerCase();
-          let depth = 10;
+          let depth = 3;
           try {
             depth = parseInt(depthStr, 10);
           } catch (e) {
-            reporter.updateStatus("Error occurred parsing offset " + depthStr + " as a Decimal string. Defaulting to 10.");
+            reporter.updateStatus("Error occurred parsing offset " + depthStr + " as a Decimal string. Defaulting to 3.");
             offset = 10;
           }
 
