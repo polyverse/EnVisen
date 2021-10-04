@@ -9,7 +9,7 @@ self-contained client-side browser application. Focussed on extreme simplicity
 of usage and portability across platforms.
 
 # Get Started:
-Visit the hosted version here: https://analyze.polyverse.io/
+Visit the hosted version here: https://analyze.polyverse.com/
 
 ## Blog posts that use the tool
 
