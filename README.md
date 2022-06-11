@@ -1,3 +1,15 @@
+# DEPRECATION NOTICE
+
+Please note that this repository has been deprecated and is no longer actively maintained by Polyverse Corporation.  It may be removed in the future, but for now remains public for the benefit of any users.
+
+Importantly, as the repository has not been maintained, it may contain unpatched security issues and other critical issues.  Use at your own risk.
+
+While it is not maintained, we would graciously consider any pull requests in accordance with our Individual Contributor License Agreement.  https://github.com/polyverse/contributor-license-agreement
+
+For any other issues, please feel free to contact info@polyverse.com
+
+---
+
 ⚠️ This tool may only be used for educational, teaching, learning,
 understanding and research purposes only.
 
@@ -11,19 +23,6 @@ of usage and portability across platforms.
 # Get Started:
 Visit the hosted version here: https://analyze.polyverse.com/
 
-## Blog posts that use the tool
-
-[How Polymorphic Linux stops attacks when everything else has failed](https://blog.polyverse.io/how-polymorphic-linux-stops-attacks-when-everything-else-has-failed-cd8d6b2d669f)
-
-[ASLR Simplified](https://blog.polyverse.io/why-aslr-stops-rop-attacks-8e961ca6951e)
-
-[Fun with binaries](https://blog.polyverse.io/fun-with-binaries-4361128556a4)
-
-[Let's craft some real attacks](https://blog.polyverse.io/lets-craft-some-real-attacks-8efac7b3df90)
-
-# Find us on the Polymorphic Linux Slack channel
-
-https://join.slack.com/t/polymorphic-linux/shared_invite/enQtMjk2MDEzNjI3MDQ3LTNjNmI3MzYzNTMwMGRmZmMxZTc0M2NkNDg2MDFlY2U0NjllZTFkZThmNGVjMWZjZjJiNTBhZDQ1M2Y1YjQ2OTI
 
 ## Self hosting
 
